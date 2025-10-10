@@ -1,20 +1,48 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Zap, CheckCircle, TrendingUp, Users, Target } from 'lucide-react';
+import { ArrowRight, Zap, CheckCircle, TrendingUp, Users, Target, Mail, Lock, AlertCircle } from 'lucide-react';
+import { loginUser } from '../utils/auth';
+import SignUpModal from '../components/SignUpModal';
 
 export default function LandingPage() {
   const [showLogin, setShowLogin] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [loginData, setLoginData] = useState({ email: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    // Navigate to Page 2: Onboarding
-    navigate('/onboarding');
+    // Show sign up modal for new users
+    setShowSignUp(true);
   };
 
-  const handleLogin = () => {
-    // Navigate to Page 3: Dashboard after login
-    navigate('/dashboard');
-    setShowLogin(false);
+  const handleLoginChange = (e) => {
+    setLoginData({
+      ...loginData,
+      [e.target.name]: e.target.value
+    });
+    // Clear error when user starts typing
+    if (loginError) setLoginError('');
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setLoginError('');
+
+    const result = loginUser(loginData.email, loginData.password);
+    
+    if (result.success) {
+      // Login successful, navigate to dashboard
+      navigate('/dashboard');
+      setShowLogin(false);
+      setLoginData({ email: '', password: '' });
+    } else {
+      setLoginError(result.error);
+    }
+    
+    setIsLoading(false);
   };
 
   return (
@@ -38,6 +66,12 @@ export default function LandingPage() {
                 className="text-gray-700 hover:text-blue-600 font-semibold transition-colors px-4 py-2"
               >
                 Login
+              </button>
+              <button 
+                onClick={() => setShowSignUp(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-colors"
+              >
+                Sign Up
               </button>
             </div>
           </div>
@@ -76,10 +110,6 @@ export default function LandingPage() {
               <div className="flex items-center space-x-2">
                 <CheckCircle className="w-5 h-5 text-green-500" />
                 <span className="text-gray-600">No credit card required</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5 text-green-500" />
-                <span className="text-gray-600">Free forever</span>
               </div>
             </div>
           </div>
@@ -147,47 +177,93 @@ export default function LandingPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
             <div className="mb-8">
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h3>
+              <h3 className="text-3xl font-bold text-slate-800 mb-2">Welcome</h3>
               <p className="text-gray-600">Login to continue your journey</p>
             </div>
             
-            <div className="space-y-5">
+            {loginError && (
+              <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-2">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+                <p className="text-red-700 text-sm">{loginError}</p>
+              </div>
+            )}
+            
+            <form onSubmit={handleLogin} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
-                <input 
-                  type="email" 
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="your@email.com"
-                />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input 
+                    type="email"
+                    name="email"
+                    value={loginData.email}
+                    onChange={handleLoginChange}
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="your@email.com"
+                    required
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Password</label>
-                <input 
-                  type="password" 
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="••••••••"
-                />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input 
+                    type="password"
+                    name="password"
+                    value={loginData.password}
+                    onChange={handleLoginChange}
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                    placeholder="••••••••"
+                    required
+                  />
+                </div>
               </div>
               
               <button 
-                onClick={handleLogin}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-105 transition-all"
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-xl font-bold text-lg hover:shadow-xl hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                Login to Dashboard
+                {isLoading ? 'Logging in...' : 'Login'}
               </button>
               
-              <div className="text-center pt-4">
+              <div className="text-center pt-4 space-y-2">
+                <p className="text-gray-600">
+                  Don't have an account?{' '}
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setShowLogin(false);
+                      setShowSignUp(true);
+                    }}
+                    className="text-blue-600 hover:text-blue-700 font-semibold"
+                  >
+                    Sign up here
+                  </button>
+                </p>
                 <button 
-                  onClick={() => setShowLogin(false)}
+                  type="button"
+                  onClick={() => {
+                    setShowLogin(false);
+                    setLoginData({ email: '', password: '' });
+                    setLoginError('');
+                  }}
                   className="text-gray-500 hover:text-gray-700 font-medium"
                 >
                   Cancel
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
+
+      {/* Sign Up Modal */}
+      <SignUpModal
+        isOpen={showSignUp}
+        onClose={() => setShowSignUp(false)}
+      />
     </div>
   );
 }
