@@ -5,8 +5,16 @@ const API_BASE_URL = 'http://localhost:8000/api';
 // Helper function to handle API responses
 const handleResponse = async (response) => {
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
-    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+    let errorData;
+    try {
+      const text = await response.text();
+      errorData = text ? JSON.parse(text) : { detail: 'Unknown error' };
+    } catch {
+      errorData = { detail: `HTTP error! status: ${response.status}` };
+    }
+    const error = new Error(errorData.detail || errorData.message || `HTTP error! status: ${response.status}`);
+    error.response = { status: response.status, data: errorData };
+    throw error;
   }
   return response.json();
 };
@@ -69,11 +77,15 @@ export const getSectors = async () => {
 };
 
 export const getBranches = async (sectorId) => {
-  return apiRequest(`/sectors/${sectorId}/branches`);
+  const response = await apiRequest(`/sectors/${sectorId}/branches`);
+  // API returns {branches: [...]} so we need to extract the array
+  return Array.isArray(response) ? response : (response.branches || response || []);
 };
 
 export const getSpecializations = async (branchId) => {
-  return apiRequest(`/branches/${branchId}/specializations`);
+  const response = await apiRequest(`/branches/${branchId}/specializations`);
+  // API returns {specializations: [...]} so we need to extract the array
+  return Array.isArray(response) ? response : (response.specializations || response || []);
 };
 
 // Save user's selections to database

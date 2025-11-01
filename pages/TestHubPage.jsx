@@ -4,6 +4,8 @@ import { BookOpen, Clock, User, Filter, Search, ChevronRight, X, ArrowLeft } fro
 import { getCurrentUser } from '../utils/auth';
 import { getAvailableTests, getTestCategories, getDifficultyLevels } from '../utils/testSystem';
 
+const API_BASE = 'http://localhost:8000/api';
+
 const TestHubPage = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -36,20 +38,68 @@ const TestHubPage = () => {
     applyFilters();
   }, [tests, filters]);
 
-  const loadTests = () => {
+  const loadTests = async () => {
     try {
-      const allTests = getAvailableTests();
-      setTests(allTests);
+      setLoading(true);
+      // Fetch quizzes from database API
+      const response = await fetch('http://localhost:8000/api/quizzes');
+      if (!response.ok) throw new Error('Failed to fetch quizzes');
+      
+      const data = await response.json();
+      // Transform database format to frontend format
+      const transformedTests = (data.quizzes || []).map(quiz => ({
+        id: quiz.id.toString(),
+        title: quiz.title,
+        description: quiz.description,
+        category: quiz.specialization_name || 'General',
+        difficulty: ['Beginner', 'Intermediate', 'Advanced', 'Expert'][quiz.difficulty - 1] || 'Beginner',
+        estimatedTime: quiz.duration || 30,
+        tags: [quiz.specialization_name || 'General'],
+        questionCount: quiz.question_count || 0
+      }));
+      
+      setTests(transformedTests);
       setLoading(false);
     } catch (error) {
       console.error('Error loading tests:', error);
-      setTests([]);
+      // Fallback to hardcoded tests if API fails
+      try {
+        const allTests = getAvailableTests();
+        setTests(allTests);
+      } catch (fallbackError) {
+        setTests([]);
+      }
       setLoading(false);
     }
   };
 
   const applyFilters = () => {
-    const filtered = getAvailableTests(filters);
+    let filtered = [...tests];
+    
+    // Apply search filter
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(test => 
+        test.title.toLowerCase().includes(searchLower) ||
+        test.description?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Apply category filter
+    if (filters.category) {
+      filtered = filtered.filter(test => test.category === filters.category);
+    }
+    
+    // Apply difficulty filter
+    if (filters.difficulty) {
+      filtered = filtered.filter(test => test.difficulty === filters.difficulty);
+    }
+    
+    // Apply max time filter
+    if (filters.maxTime) {
+      filtered = filtered.filter(test => test.estimatedTime <= parseInt(filters.maxTime));
+    }
+    
     setFilteredTests(filtered);
   };
 

@@ -33,17 +33,59 @@ const TestTakingPage = () => {
       return;
     }
     
-    // Load the test
-    const testData = getTestById(testId);
-    if (!testData) {
-      navigate('/test-hub');
-      return;
-    }
+    // Load the test from database API
+    const loadTest = async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/api/quizzes/${testId}`);
+        if (!response.ok) throw new Error('Failed to fetch quiz');
+        
+        const quizData = await response.json();
+        
+        // Transform database format to frontend format
+        const transformedTest = {
+          id: quizData.id.toString(),
+          title: quizData.title,
+          description: quizData.description,
+          estimatedTime: quizData.duration || 30,
+          questions: (quizData.questions || []).map((q, idx) => {
+            // Extract option texts and find correct index
+            const optionTexts = q.options ? 
+              (q.options.map ? q.options.map(opt => typeof opt === 'string' ? opt : opt.text) : q.options) : [];
+            const correctIndex = q.correct_index !== undefined ? q.correct_index :
+              (q.options && q.options.findIndex ? q.options.findIndex(opt => 
+                (typeof opt === 'object' && opt.is_correct)) : null);
+            
+            return {
+              id: q.id || idx + 1,
+              type: 'multiple-choice',
+              question: q.question,
+              options: optionTexts,
+              correct: correctIndex,
+              explanation: q.explanation
+            };
+          })
+        };
+        
+        setTest(transformedTest);
+        setTimeLeft(transformedTest.estimatedTime * 60);
+        setStartTime(Date.now());
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading quiz from API:', error);
+        // Fallback to hardcoded test data
+        const testData = getTestById(testId);
+        if (!testData) {
+          navigate('/test-hub');
+          return;
+        }
+        setTest(testData);
+        setTimeLeft(testData.estimatedTime * 60);
+        setStartTime(Date.now());
+        setLoading(false);
+      }
+    };
     
-    setTest(testData);
-    setTimeLeft(testData.estimatedTime * 60); // Convert to seconds
-    setStartTime(Date.now());
-    setLoading(false);
+    loadTest();
   }, [navigate, location.state]);
 
   // Timer countdown

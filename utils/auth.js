@@ -2,19 +2,25 @@
 import { authAPI, testConnection } from './api.jsx';
 
 // User data structure (for frontend use)
+// Map backend snake_case to frontend camelCase
 const createUser = (userData) => ({
-  ...userData,
-  readinessScore: userData.readinessScore || 0,
-  technicalScore: userData.technicalScore || 0,
-  softSkillsScore: userData.softSkillsScore || 0,
-  leadershipScore: userData.leadershipScore || 0,
+  id: userData.id,
+  email: userData.email,
+  name: userData.name,
+  readinessScore: userData.readiness_score || userData.readinessScore || 0,
+  technicalScore: userData.technical_score || userData.technicalScore || 0,
+  softSkillsScore: userData.soft_skills_score || userData.softSkillsScore || 0,
+  leadershipScore: userData.leadership_score || userData.leadershipScore || 0,
+  specializationId: userData.preferred_specialization_id || userData.specialization_id || userData.specializationId || null,
+  createdAt: userData.created_at || userData.createdAt,
   completedTests: userData.completedTests || [],
   badges: userData.badges || [],
-  recentActivity: userData.recentActivity || []
+  recentActivity: userData.recentActivity || [],
+  isActive: userData.is_active !== undefined ? userData.is_active : true
 });
 
-// Register a new user
-export const registerUser = async (email, password, name) => {
+// Register a new user (parameters: name, email, password - matches AuthPage.jsx)
+export const registerUser = async (name, email, password) => {
   try {
     // Test API connection first
     const connectionTest = await testConnection();
@@ -24,25 +30,30 @@ export const registerUser = async (email, password, name) => {
 
     // Register user with backend
     const userData = {
+      name,
       email,
-      password,
-      name
+      password
     };
     
     const response = await authAPI.register(userData);
     
-    if (response.user) {
+    if (response.success && response.user) {
       const user = createUser(response.user);
       // Set current user in localStorage for session management
       setCurrentUser(user);
+      console.log('User registered successfully:', user);
       return { success: true, user };
     } else {
-      throw new Error(response.message || 'Registration failed');
+      throw new Error(response.detail || response.message || 'Registration failed');
     }
     
   } catch (error) {
     console.error('Registration error:', error);
-    return { success: false, error: error.message };
+    // Handle HTTP errors
+    if (error.response) {
+      return { success: false, error: error.response.data?.detail || error.message };
+    }
+    return { success: false, error: error.message || error.toString() };
   }
 };
 
@@ -59,18 +70,23 @@ export const loginUser = async (email, password) => {
     const credentials = { email, password };
     const response = await authAPI.login(credentials);
     
-    if (response.user) {
+    if (response.success && response.user) {
       const user = createUser(response.user);
       // Set current user in localStorage for session management
       setCurrentUser(user);
+      console.log('User logged in successfully:', user);
       return { success: true, user };
     } else {
-      throw new Error(response.message || 'Login failed');
+      throw new Error(response.detail || response.message || 'Login failed');
     }
     
   } catch (error) {
     console.error('Login error:', error);
-    return { success: false, error: error.message };
+    // Handle HTTP errors
+    if (error.response) {
+      return { success: false, error: error.response.data?.detail || error.message };
+    }
+    return { success: false, error: error.message || error.toString() };
   }
 };
 

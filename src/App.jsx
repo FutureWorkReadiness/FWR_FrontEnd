@@ -15,6 +15,7 @@ import TestResultsPage from '../pages/TestResultsPage';
 import ConnectionTestPage from '../pages/ConnectionTestPage';
 import DatabaseTestPage from '../pages/DatabaseTestPage';
 import SimpleTestPage from '../pages/SimpleTestPage';
+import AdminPage from '../pages/AdminPage';
 
 // Import components
 import ProtectedRoute from '../components/ProtectedRoute';
@@ -31,6 +32,7 @@ function App() {
         <Route path="/database-test" element={<DatabaseTestPage />} />
         <Route path="/simple-test" element={<SimpleTestPage />} />
         <Route path="/test" element={<TestPage />} />
+        <Route path="/admin" element={<AdminPage />} />
         
         {/* Protected Routes - Require Authentication */}
         <Route 
