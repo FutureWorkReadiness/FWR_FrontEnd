@@ -7,7 +7,7 @@ import { API_BASE_URL } from './api.jsx';
  */
 export const getCompleteHierarchy = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/hierarchy`);
+    const response = await fetch(`${API_BASE_URL}/hierarchy`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

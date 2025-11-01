@@ -36,10 +36,24 @@ const TestTakingPage = () => {
     // Load the test from database API
     const loadTest = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/api/quizzes/${testId}`);
-        if (!response.ok) throw new Error('Failed to fetch quiz');
+        // Ensure testId is a number (may come as string from location.state)
+        const quizId = typeof testId === 'string' ? parseInt(testId) : testId;
+        
+        if (!quizId || isNaN(quizId)) {
+          throw new Error(`Invalid quiz ID: ${testId}`);
+        }
+        
+        console.log(`Loading quiz with ID: ${quizId}`);
+        const response = await fetch(`http://localhost:8000/api/quizzes/${quizId}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`API Error: ${response.status} - ${errorText}`);
+          throw new Error(`Failed to fetch quiz: ${response.status} ${errorText}`);
+        }
         
         const quizData = await response.json();
+        console.log('Quiz data loaded:', quizData);
         
         // Transform database format to frontend format
         const transformedTest = {
@@ -72,16 +86,10 @@ const TestTakingPage = () => {
         setLoading(false);
       } catch (error) {
         console.error('Error loading quiz from API:', error);
-        // Fallback to hardcoded test data
-        const testData = getTestById(testId);
-        if (!testData) {
-          navigate('/test-hub');
-          return;
-        }
-        setTest(testData);
-        setTimeLeft(testData.estimatedTime * 60);
-        setStartTime(Date.now());
-        setLoading(false);
+        // Show detailed error message
+        const errorMessage = error.message || 'Failed to load quiz. Please ensure the backend is running.';
+        alert(`Error: ${errorMessage}\n\nCheck browser console for details.`);
+        navigate('/test-hub');
       }
     };
     
@@ -121,30 +129,99 @@ const TestTakingPage = () => {
   const handleSubmit = async (autoSubmit = false) => {
     if (isSubmitted) return;
 
-    const endTime = Date.now();
-    const timeSpent = Math.round((endTime - startTime) / 1000); // in seconds
-    
-    // Calculate score
-    const correctAnswers = test.questions.map(q => q.correct);
-    const userAnswers = test.questions.map(q => answers[q.id] ?? null);
-    const score = calculateTestScore(userAnswers, correctAnswers);
-    
-    // Save result
-    const result = saveTestResult(user.id, test.id, score, answers, timeSpent);
-    
-    setIsSubmitted(true);
-    
-    // Navigate to results
-    navigate('/test-results', {
-      state: {
-        test,
-        answers,
-        score,
-        timeSpent,
-        result,
-        autoSubmit
+    try {
+      setIsSubmitted(true);
+      const endTime = Date.now();
+      const timeSpent = Math.round((endTime - startTime) / 1000); // in seconds
+      
+      // Try to submit to backend API
+      let backendResult = null;
+      let score = 0;
+      let correctCount = 0;
+      
+      try {
+        // Start quiz attempt - backend expects user_id as query parameter
+        const startResponse = await fetch(`http://localhost:8000/api/quizzes/${quizId}/start?user_id=${user.id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (startResponse.ok) {
+          const startData = await startResponse.json();
+          const attemptId = startData.attempt_id;
+          
+          // Prepare answers for submission
+          const submissionAnswers = test.questions.map((q, idx) => {
+            const userAnswerIndex = answers[q.id];
+            const selectedOption = q.options[userAnswerIndex];
+            return {
+              question_id: q.id,
+              selected_answer: selectedOption || ""
+            };
+          });
+          
+          // Submit quiz answers - backend endpoint: /api/attempts/{attempt_id}/submit
+          const submitResponse = await fetch(`http://localhost:8000/api/attempts/${attemptId}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answers: submissionAnswers })
+          });
+          
+          if (submitResponse.ok) {
+            backendResult = await submitResponse.json();
+            score = backendResult.score || 0;
+            correctCount = backendResult.correct || 0;
+            console.log('Quiz submitted successfully to backend:', backendResult);
+          }
+        }
+      } catch (backendError) {
+        console.warn('Backend submission failed, using local calculation:', backendError);
       }
-    });
+      
+      // Fallback to local calculation if backend submission failed
+      if (!backendResult) {
+        const correctAnswers = test.questions.map(q => q.correct);
+        const userAnswers = test.questions.map(q => answers[q.id] ?? null);
+        score = calculateTestScore(userAnswers, correctAnswers);
+        correctCount = userAnswers.filter((ans, idx) => ans === correctAnswers[idx]).length;
+      }
+      
+      // Save result locally as backup
+      const localResult = saveTestResult(user.id, test.id, score, answers, timeSpent);
+      
+      // Navigate to results
+      navigate('/test-results', {
+        state: {
+          test,
+          answers,
+          score,
+          correct: correctCount,
+          total: test.questions.length,
+          timeSpent,
+          result: backendResult || localResult,
+          autoSubmit,
+          passed: score >= 70
+        }
+      });
+    } catch (error) {
+      console.error('Error submitting quiz:', error);
+      // Still navigate to results even if submission fails
+      const correctAnswers = test.questions.map(q => q.correct);
+      const userAnswers = test.questions.map(q => answers[q.id] ?? null);
+      const score = calculateTestScore(userAnswers, correctAnswers);
+      const result = saveTestResult(user.id, test.id, score, answers, timeSpent);
+      
+      navigate('/test-results', {
+        state: {
+          test,
+          answers,
+          score,
+          timeSpent,
+          result,
+          autoSubmit
+        }
+      });
+    }
   };
 
   const handleExit = () => {

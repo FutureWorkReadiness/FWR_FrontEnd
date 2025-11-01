@@ -1,53 +1,57 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Zap, PlayCircle, Target, Award, TrendingUp, Clock, User, LogOut } from 'lucide-react';
 import { getCurrentUser, logoutUser } from '../utils/auth';
-import { getSpecializationRecommendations, getUserSpecializationPath } from '../utils/industryHierarchy';
+import { getSpecializationDetails } from '../utils/hierarchicalApi';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const [specializationName, setSpecializationName] = useState(null);
+  const [loading, setLoading] = useState(true);
   
   // Get current user data
   const currentUser = getCurrentUser();
-  const userIndustryData = currentUser?.industry;
+  const specializationId = currentUser?.specializationId || currentUser?.specialization_id;
+  
+  // Fetch specialization details from backend
+  useEffect(() => {
+    const fetchSpecialization = async () => {
+      if (specializationId) {
+        try {
+          const specData = await getSpecializationDetails(specializationId);
+          setSpecializationName(specData.name || 'Loading...');
+        } catch (error) {
+          console.error('Failed to fetch specialization:', error);
+          setSpecializationName('Not specified');
+        }
+      } else {
+        setSpecializationName('Not specified');
+      }
+      setLoading(false);
+    };
+    
+    fetchSpecialization();
+  }, [specializationId]);
   
   const handleLogout = () => {
     logoutUser();
     navigate('/');
   };
 
-  // Get user's specialization path and recommendations
-  let userPath = null;
+  // Get recommendations based on specialization
   let currentRecommendation = null;
-
-  if (userIndustryData && typeof userIndustryData === 'object') {
-    // New hierarchical structure
-    userPath = getUserSpecializationPath(
-      userIndustryData.industry,
-      userIndustryData.branch,
-      userIndustryData.specialization
-    );
-    currentRecommendation = getSpecializationRecommendations(
-      userIndustryData.industry,
-      userIndustryData.branch,
-      userIndustryData.specialization
-    );
-  } else if (userIndustryData && typeof userIndustryData === 'string') {
-    // Legacy single industry selection - provide default recommendation
+  if (specializationName && specializationName !== 'Not specified') {
     currentRecommendation = {
-      title: `Advanced ${userIndustryData} Skills`,
-      description: `Continue developing your expertise in ${userIndustryData}.`,
+      title: `Advanced ${specializationName} Skills`,
+      description: `Continue developing your expertise in ${specializationName}.`,
       category: 'Technical'
     };
-    userPath = { fullPath: userIndustryData };
   } else {
-    // No industry selected - default recommendation
     currentRecommendation = {
       title: 'Complete Your Profile',
       description: 'Complete your onboarding to get personalized recommendations.',
       category: 'Setup'
     };
-    userPath = { fullPath: 'Not specified' };
   }  // Get user scores or use defaults for new users
   const readinessScore = currentUser?.readinessScore || 0;
   const technicalScore = currentUser?.technicalScore || 0;
@@ -99,7 +103,9 @@ export default function DashboardPage() {
             </h1>
             <div className="flex items-center space-x-2 text-gray-600">
               <Target className="w-5 h-5 text-blue-500" />
-              <span className="text-sm font-medium">Specialization: {userPath?.fullPath}</span>
+              <span className="text-sm font-medium">
+                Specialization: {loading ? 'Loading...' : (specializationName || 'Not specified')}
+              </span>
             </div>
           </div>
           <button

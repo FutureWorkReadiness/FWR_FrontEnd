@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSectors, getBranches, getSpecializations } from '../utils/api';
+import { getSectors, getBranches, getSpecializations, updateUserSpecialization } from '../utils/api';
+import { getCurrentUser } from '../utils/auth';
 
 export default function WorkingOnboardingPage() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -120,19 +121,43 @@ export default function WorkingOnboardingPage() {
             setError('');
             
             // Get current user and save specialization selection
-            const { getCurrentUser } = await import('../utils/auth');
-            const { updateUserSpecialization } = await import('../utils/api');
-            
             const currentUser = getCurrentUser();
             if (currentUser && currentUser.id) {
-                const result = await updateUserSpecialization(currentUser.id, parseInt(selectedSpecialization));
-                if (result.success) {
-                    // Update user in localStorage
-                    const updatedUser = { ...currentUser, specializationId: parseInt(selectedSpecialization) };
+                try {
+                    const result = await updateUserSpecialization(currentUser.id, parseInt(selectedSpecialization));
+                    if (result && result.success) {
+                        // Backend returns updated user object
+                        const userData = result.user || result;
+                        if (userData && userData.id) {
+                            // Map backend response to frontend format
+                            const updatedUser = {
+                                id: userData.id,
+                                email: userData.email,
+                                name: userData.name,
+                                specializationId: userData.specialization_id,
+                                specialization_id: userData.specialization_id,
+                                readinessScore: userData.readiness_score || 0,
+                                technicalScore: userData.technical_score || 0,
+                                softSkillsScore: userData.soft_skills_score || 0,
+                                leadershipScore: userData.leadership_score || 0,
+                                createdAt: userData.created_at
+                            };
+                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                            console.log('User data updated from backend response:', updatedUser);
+                        } else {
+                            // Fallback: update localStorage with specializationId
+                            const updatedUser = { ...currentUser, specializationId: parseInt(selectedSpecialization), specialization_id: parseInt(selectedSpecialization) };
+                            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                        }
+                        console.log('Specialization saved successfully');
+                    } else {
+                        throw new Error(result?.error || 'Failed to save specialization');
+                    }
+                } catch (saveError) {
+                    console.warn('Failed to save specialization to backend:', saveError);
+                    // Still continue - update localStorage anyway
+                    const updatedUser = { ...currentUser, specializationId: parseInt(selectedSpecialization), specialization_id: parseInt(selectedSpecialization) };
                     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-                    console.log('Specialization saved successfully');
-                } else {
-                    throw new Error(result.error || 'Failed to save specialization');
                 }
             }
             

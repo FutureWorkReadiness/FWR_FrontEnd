@@ -1,6 +1,6 @@
 // API service for connecting to FastAPI backend
 
-const API_BASE_URL = 'http://localhost:8000/api';
+export const API_BASE_URL = 'http://localhost:8000/api';
 
 // Helper function to handle API responses
 const handleResponse = async (response) => {
@@ -60,14 +60,15 @@ export const authAPI = {
   },
 
   getProfile: async (userId) => {
-    return apiRequest(`/${userId}/profile`);
+    // Use correct endpoint: /api/users/users/{id}
+    return apiRequest(`/users/users/${userId}`);
   },
 
   updateIndustry: async (userId, industryData) => {
-    return apiRequest(`/${userId}/industry`, {
-      method: 'PUT',
-      body: industryData,
-    });
+    // Note: This endpoint doesn't exist in backend yet
+    // For now, redirect to specialization update or remove
+    console.warn('updateIndustry endpoint not implemented in backend');
+    throw new Error('Update industry endpoint not implemented. Use updateUserSpecialization instead.');
   },
 };
 
@@ -106,7 +107,21 @@ export const quizAPI = {
     return apiRequest(`/quizzes/${quizId}`);
   },
 
+  startQuiz: async (quizId, userId) => {
+    return apiRequest(`/quizzes/${quizId}/start?user_id=${userId}`, {
+      method: 'POST',
+    });
+  },
+
+  submitQuizAttempt: async (attemptId, answers) => {
+    return apiRequest(`/attempts/${attemptId}/submit`, {
+      method: 'POST',
+      body: { answers },
+    });
+  },
+
   submitQuizResults: async (userId, quizId, results) => {
+    // Legacy method - kept for compatibility
     return apiRequest(`/quizzes/${quizId}/submit`, {
       method: 'POST',
       body: results,

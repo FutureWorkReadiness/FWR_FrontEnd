@@ -62,13 +62,10 @@ const TestHubPage = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error loading tests:', error);
-      // Fallback to hardcoded tests if API fails
-      try {
-        const allTests = getAvailableTests();
-        setTests(allTests);
-      } catch (fallbackError) {
-        setTests([]);
-      }
+      // Note: Removed fallback to hardcoded tests - all data should come from database
+      // If API fails, show error message instead
+      setError('Failed to load quizzes. Please ensure the backend is running.');
+      setTests([]);
       setLoading(false);
     }
   };
