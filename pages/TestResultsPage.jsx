@@ -14,16 +14,26 @@ const TestResultsPage = () => {
     timeSpent, 
     result, 
     autoSubmit = false,
-    attemptId
+    attemptId,
+    backendResult  // Extract the backendResult from navigation state
   } = location.state || {};
 
-  const [backendData, setBackendData] = useState(null);
+  const [backendData, setBackendData] = useState(backendResult || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Log everything we received
+    console.log('TestResultsPage - Full location.state:', location.state);
+    console.log('TestResultsPage - test:', test);
+    console.log('TestResultsPage - backendResult:', backendResult);
+    console.log('TestResultsPage - feedback:', backendResult?.feedback);
+    console.log('TestResultsPage - answers:', answers);
+    console.log('TestResultsPage - score:', score);
+    
     const fetchResult = async () => {
-      if (!attemptId) return;
+      // Only fetch if we don't already have backendResult with feedback
+      if (!attemptId || backendResult?.feedback) return;
       setLoading(true);
       setError(null);
       try {
@@ -33,17 +43,21 @@ const TestResultsPage = () => {
           throw new Error(`Results error ${res.status}: ${t}`);
         }
         const data = await res.json();
+        console.log('Fetched backend data:', data);
         setBackendData(data);
       } catch (e) {
+        console.error('Error fetching results:', e);
         setError(e.message || 'Failed to load results');
       } finally {
         setLoading(false);
       }
     };
     fetchResult();
-  }, [attemptId]);
+  }, [attemptId, backendResult]);
 
-  if (!test || !result) {
+  // If we have backendResult, we have enough data to show results
+  if (!test && !backendData) {
+    console.log('Returning early - no test and no backendData');
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
@@ -59,8 +73,10 @@ const TestResultsPage = () => {
     );
   }
 
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
+  // Add a try-catch to prevent white screen
+  try {
+    const formatTime = (seconds) => {
+      const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
@@ -180,7 +196,7 @@ const TestResultsPage = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <Target className="h-8 w-8 text-blue-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {Object.keys(answers).length}/{test.questions.length}
+              {Object.keys(answers || {}).length}/{test?.questions?.length || 0}
             </div>
             <div className="text-sm text-gray-600">Questions Answered</div>
           </div>
@@ -188,7 +204,7 @@ const TestResultsPage = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <Clock className="h-8 w-8 text-green-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {formatTime(timeSpent)}
+              {formatTime(timeSpent || 0)}
             </div>
             <div className="text-sm text-gray-600">Time Taken</div>
           </div>
@@ -196,19 +212,90 @@ const TestResultsPage = () => {
           <div className="bg-white rounded-lg shadow-lg p-6 text-center">
             <Trophy className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
             <div className="text-2xl font-bold text-gray-900">
-              {test.difficulty}
+              {test?.difficulty || 'N/A'}
             </div>
             <div className="text-sm text-gray-600">Difficulty Level</div>
           </div>
         </div>
 
+        {/* Personalized Feedback */}
+        {backendData?.feedback && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Personalized Feedback</h3>
+            
+            {/* Overall Feedback */}
+            {backendData.feedback.overall && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <p className="text-gray-800">{backendData.feedback.overall}</p>
+              </div>
+            )}
+
+            {/* Recommendations */}
+            {backendData.feedback.recommendations && Array.isArray(backendData.feedback.recommendations) && backendData.feedback.recommendations.length > 0 && (
+              <div className="mb-4">
+                <h4 className="font-semibold text-gray-900 mb-2">Recommendations:</h4>
+                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                  {backendData.feedback.recommendations.map((rec, idx) => (
+                    <li key={idx}>{rec}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Strengths & Weaknesses */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {backendData.feedback.strengths && Array.isArray(backendData.feedback.strengths) && backendData.feedback.strengths.length > 0 && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-green-900 mb-2">Strengths:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-green-800">
+                    {backendData.feedback.strengths.map((str, idx) => (
+                      <li key={idx}>{str}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {backendData.feedback.weaknesses && Array.isArray(backendData.feedback.weaknesses) && backendData.feedback.weaknesses.length > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-red-900 mb-2">Areas for Improvement:</h4>
+                  <ul className="list-disc list-inside space-y-1 text-red-800">
+                    {backendData.feedback.weaknesses.map((weak, idx) => (
+                      <li key={idx}>{weak}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Score Impact */}
+            {backendData.score_impact && backendData.score_impact.length > 0 && (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-2">Score Impact:</h4>
+                <div className="space-y-2">
+                  {backendData.score_impact.map((impact, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg p-3">
+                      <span className="text-gray-700">{impact.category}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-600">{Math.round(impact.old_score)}%</span>
+                        <span className="text-gray-400">→</span>
+                        <span className="font-semibold text-gray-900">{Math.round(impact.new_score)}%</span>
+                        <span className="text-green-600 font-medium">+{impact.increase.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Question Review */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Question Review</h3>
-          <div className="space-y-6">
-            {test.questions.map((question, index) => {
-              const userAnswer = answers[question.id];
-              const isCorrect = userAnswer === question.correct;
+        {test?.questions && (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">Question Review</h3>
+            <div className="space-y-6">
+              {test.questions.map((question, index) => {
+                const userAnswer = answers?.[question.id];
+                const isCorrect = userAnswer === question.correct;
               
               return (
                 <div key={question.id} className="border-b border-gray-200 pb-6 last:border-b-0">
@@ -300,6 +387,7 @@ const TestResultsPage = () => {
             })}
           </div>
         </div>
+        )}
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -330,6 +418,22 @@ const TestResultsPage = () => {
       </div>
     </div>
   );
+  } catch (err) {
+    console.error('Error rendering TestResultsPage:', err);
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error displaying results: {err.message}</p>
+          <button
+            onClick={() => navigate('/test-hub')}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
+          >
+            Back to Test Hub
+          </button>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default TestResultsPage;

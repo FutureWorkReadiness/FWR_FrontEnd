@@ -222,6 +222,7 @@ const TestTakingPage = () => {
           total: test.questions.length,
           timeSpent,
           result: backendResult || localResult,
+          backendResult: backendResult,  // Pass the full backend response with feedback
           autoSubmit,
           passed: score >= 70,
           attemptId: createdAttemptId
