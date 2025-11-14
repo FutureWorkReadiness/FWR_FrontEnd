@@ -84,6 +84,14 @@ export default function DashboardPage() {
       onClick: () => navigate('/test-hub')
     },
     {
+      id: 'peer-benchmark',
+      title: 'Peer Benchmarking',
+      description: 'Compare your scores with peers in your specialization',
+      icon: TrendingUp,
+      color: 'bg-indigo-500',
+      onClick: () => navigate('/peer-benchmark')
+    },
+    {
       id: 'skill-exercise',
       title: 'Try a Skill-Based Exercise',
       description: 'Practice hands-on skills',

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Target, Plus, Edit2, Trash2, BookOpen, TrendingUp, CheckCircle } from 'lucide-react';
+import { Target, Plus, Edit2, Trash2, BookOpen, TrendingUp, CheckCircle, Sparkles } from 'lucide-react';
+import { colors, gradients, buttonStyles, cardStyles, SkeletonLoader } from '../utils/designSystem';
 
 export default function GoalsPage() {
   const navigate = useNavigate();
@@ -321,7 +322,7 @@ export default function GoalsPage() {
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+                    className={`${buttonStyles.primary} flex-1 px-4 py-2`}
                   >
                     {editingGoal ? 'Update Goal' : 'Create Goal'}
                   </button>

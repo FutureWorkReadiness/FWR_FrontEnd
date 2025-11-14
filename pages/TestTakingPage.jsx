@@ -180,7 +180,19 @@ const TestTakingPage = () => {
             score = backendResult.score || 0;
             correctCount = backendResult.correct || 0;
             console.log('Quiz submitted successfully to backend:', backendResult);
-            // Update local currentUser with backend readiness snapshot if present
+            
+            // Refresh user data from backend to get latest scores
+            try {
+              const { refreshUserData } = await import('../utils/auth');
+              const refreshResult = await refreshUserData(user.id);
+              if (refreshResult.success) {
+                console.log('User data refreshed after quiz:', refreshResult.user);
+              }
+            } catch (refreshError) {
+              console.warn('Failed to refresh user data:', refreshError);
+            }
+            
+            // Update local currentUser with backend readiness snapshot if present (backup)
             try {
               if (backendResult.readiness) {
                 const userRaw = localStorage.getItem('currentUser');

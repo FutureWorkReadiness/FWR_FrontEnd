@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSectorsHierarchical } from '../utils/hierarchicalApi';
+import { colors, gradients, buttonStyles, cardStyles, SkeletonLoader } from '../utils/designSystem';
 
 export default function HierarchicalOnboardingPage() {
   const navigate = useNavigate();
@@ -452,15 +453,7 @@ export default function HierarchicalOnboardingPage() {
         }}>
           <button
             onClick={handleBack}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#6b7280',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500'
-            }}
+            className={`${buttonStyles.secondary} px-6 py-3`}
           >
             ← Back
           </button>
@@ -472,17 +465,7 @@ export default function HierarchicalOnboardingPage() {
                 (currentStep === 1 && !selectedSector) ||
                 (currentStep === 2 && !selectedBranch)
               }
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: (currentStep === 1 && selectedSector) || (currentStep === 2 && selectedBranch) 
-                  ? '#3b82f6' : '#d1d5db',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: (currentStep === 1 && selectedSector) || (currentStep === 2 && selectedBranch) 
-                  ? 'pointer' : 'not-allowed',
-                fontWeight: '500'
-              }}
+              className={`${buttonStyles.primary} px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               Next →
             </button>
@@ -490,15 +473,7 @@ export default function HierarchicalOnboardingPage() {
             <button
               onClick={handleComplete}
               disabled={!selectedSpecialization}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: selectedSpecialization ? '#10b981' : '#d1d5db',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: selectedSpecialization ? 'pointer' : 'not-allowed',
-                fontWeight: '500'
-              }}
+              className={`${buttonStyles.success} px-6 py-3 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               🎉 Complete Setup
             </button>

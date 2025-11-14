@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle, XCircle, Clock, Trophy, ArrowLeft, RotateCcw, Target } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Trophy, ArrowLeft, RotateCcw, Target, Sparkles, Star } from 'lucide-react';
 import { getReadinessSnapshot } from '../utils/testSystem';
+import { colors, gradients, buttonStyles, cardStyles, SuccessAnimation } from '../utils/designSystem';
 
 const TestResultsPage = () => {
   const navigate = useNavigate();
@@ -142,15 +143,33 @@ const TestResultsPage = () => {
         )}
 
         {/* Score Overview */}
-        <div className={`bg-white rounded-xl shadow-lg p-8 mb-8 border-2 ${getScoreBgColor(score)}`}>
-          <div className="text-center">
-            <Icon className={`h-16 w-16 mx-auto mb-4 ${getScoreColor(score)}`} />
+        <div className={`${cardStyles.default} mb-8 border-2 ${getScoreBgColor(score)} relative overflow-hidden`}>
+          {/* Animated background sparkles for high scores */}
+          {displayScore >= 90 && (
+            <div className="absolute inset-0 pointer-events-none">
+              <Sparkles className="absolute top-4 right-4 h-6 w-6 text-yellow-400 animate-pulse" />
+              <Star className="absolute bottom-4 left-4 h-4 w-4 text-yellow-400 animate-bounce" style={{ animationDelay: '0.5s' }} />
+              <Sparkles className="absolute top-1/2 left-8 h-5 w-5 text-yellow-400 animate-pulse" style={{ animationDelay: '1s' }} />
+            </div>
+          )}
+
+          <div className="text-center relative z-10">
+            <div className={`inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 ${getScoreColor(score)} bg-opacity-10`}>
+              <Icon className={`h-12 w-12 ${getScoreColor(score)}`} />
+            </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">{performance.message}</h2>
-            <div className={`text-6xl font-bold mb-4 ${getScoreColor(score)}`}>
+            <div className={`text-6xl font-bold mb-4 ${getScoreColor(score)} transition-all duration-1000`}>
               {Math.round(displayScore)}%
             </div>
             <p className="text-gray-600 text-lg">
-              {displayPassed ? 'You passed the test!' : 'You need 70% to pass. Try again!'}
+              {displayPassed ? (
+                <span className="flex items-center justify-center gap-2">
+                  🎉 You passed the test!
+                  {displayScore >= 90 && <Sparkles className="h-5 w-5 text-yellow-500 animate-pulse" />}
+                </span>
+              ) : (
+                'You need 70% to pass. Keep practicing!'
+              )}
             </p>
           </div>
         </div>
