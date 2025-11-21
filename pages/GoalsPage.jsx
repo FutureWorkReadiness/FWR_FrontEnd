@@ -75,21 +75,41 @@ export default function GoalsPage() {
 
   const handleCreateGoal = async (e) => {
     e.preventDefault();
+    console.log('Creating goal with form data:', goalForm);
     try {
+      let formattedDate = null;
+      if (goalForm.target_date) {
+        // Convert YYYY-MM-DD to YYYY-MM-DDT00:00:00
+        formattedDate = goalForm.target_date.length === 10 ? `${goalForm.target_date}T00:00:00` : goalForm.target_date;
+      }
+      const payload = {
+        ...goalForm,
+        target_date: formattedDate
+      };
+      console.log('Sending payload:', payload);
+      
       const res = await fetch(`http://localhost:8000/api/goals?user_id=${user.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...goalForm,
-          target_date: goalForm.target_date || null
-        })
+        body: JSON.stringify(payload)
       });
+      
+      console.log('Response status:', res.status);
+      
       if (res.ok) {
+        const result = await res.json();
+        console.log('Goal created successfully:', result);
         await fetchData(user.id);
         setShowGoalForm(false);
         setGoalForm({ title: '', description: '', category: 'readiness', target_value: 0, target_date: '' });
+        alert('Goal created successfully!');
+      } else {
+        const errorData = await res.text();
+        console.error('Failed to create goal:', errorData);
+        alert('Failed to create goal: ' + errorData);
       }
     } catch (e) {
+      console.error('Error creating goal:', e);
       alert('Failed to create goal: ' + e.message);
     }
   };
@@ -323,6 +343,7 @@ export default function GoalsPage() {
                   <button
                     type="submit"
                     className={`${buttonStyles.primary} flex-1 px-4 py-2`}
+                    onClick={() => console.log('Create Goal button clicked!')}
                   >
                     {editingGoal ? 'Update Goal' : 'Create Goal'}
                   </button>
