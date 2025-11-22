@@ -307,6 +307,61 @@ const TestResultsPage = () => {
           </div>
         )}
 
+        {/* Auto-Updated Goals Notification */}
+        {backendData?.updated_goals && backendData.updated_goals.length > 0 && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-lg p-6 mb-8">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <Target className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-green-900 mb-2 flex items-center gap-2">
+                  🎯 Goals Auto-Updated!
+                  <Sparkles className="h-5 w-5 text-yellow-500" />
+                </h3>
+                <p className="text-green-800 mb-4">
+                  Your progress on {backendData.updated_goals.length} {backendData.updated_goals.length === 1 ? 'goal has' : 'goals have'} been automatically updated based on your quiz performance!
+                </p>
+                <div className="space-y-3">
+                  {backendData.updated_goals.map((goal, idx) => (
+                    <div key={idx} className="bg-white rounded-lg p-4 border border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900">{goal.title}</h4>
+                            {goal.completed && (
+                              <span className="inline-flex items-center gap-1 bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+                                <CheckCircle className="h-3 w-3" />
+                                Completed!
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 capitalize">{goal.category.replace('_', ' ')} Goal</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-600">
+                            {Math.round(goal.progress)}%
+                          </div>
+                          <p className="text-xs text-gray-500">Current Progress</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4">
+                  <button
+                    onClick={() => navigate('/goals')}
+                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    <Target className="h-4 w-4" />
+                    View All Goals
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Question Review */}
         {test?.questions && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">

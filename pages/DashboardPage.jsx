@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Zap, PlayCircle, Target, Award, TrendingUp, Clock, User, LogOut } from 'lucide-react';
+import { BookOpen, Zap, Target, Award, TrendingUp, Clock, User, LogOut } from 'lucide-react';
 import { getCurrentUser, logoutUser, refreshUserData } from '../utils/auth';
 import { getSpecializationDetails } from '../utils/hierarchicalApi';
 
@@ -98,14 +98,6 @@ export default function DashboardPage() {
       icon: Zap,
       color: 'bg-green-500',
       onClick: () => navigate('/tests') // Will be updated when skill exercises are created
-    },
-    {
-      id: 'simulation',
-      title: 'Run a Real-World Simulation',
-      description: 'Experience realistic scenarios',
-      icon: PlayCircle,
-      color: 'bg-purple-500',
-      onClick: () => navigate('/tests') // Will be updated when simulations are created
     }
   ];
 
@@ -306,7 +298,6 @@ export default function DashboardPage() {
                       <div className="flex-shrink-0">
                         {activity.type === 'test' && <BookOpen className="w-5 h-5 text-blue-500" />}
                         {activity.type === 'badge' && <Award className="w-5 h-5 text-orange-500" />}
-                        {activity.type === 'simulation' && <PlayCircle className="w-5 h-5 text-purple-500" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-800">{activity.title}</p>
