@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { User, Sector, Specialization, Quiz, FormData } from './types';
+import { API_BASE_URL } from '../utils/api';
 
 type Page = 'landing' | 'register' | 'login' | 'onboarding' | 'dashboard';
 
@@ -13,9 +14,6 @@ function SimpleWorkingApp(): JSX.Element {
 	const [error, setError] = useState<string>('');
 	const [loading, setLoading] = useState<boolean>(false);
 
-	// API Base URL
-	const API_BASE = import.meta.env.VITE_API_URL;
-
 	useEffect(() => {
 		fetchSectors();
 		fetchQuizzes();
@@ -24,7 +22,7 @@ function SimpleWorkingApp(): JSX.Element {
 	const fetchSectors = async (): Promise<void> => {
 		try {
 			console.log('Fetching sectors...');
-			const response = await fetch(`${API_BASE}/sectors`);
+			const response = await fetch(`${API_BASE_URL}/sectors`);
 			if (response.ok) {
 				const data = (await response.json()) as Sector[];
 				console.log('Sectors received:', data);
@@ -45,7 +43,7 @@ function SimpleWorkingApp(): JSX.Element {
 		try {
 			console.log('Fetching specializations for sector:', sectorId);
 			const response = await fetch(
-				`${API_BASE}/sectors/${sectorId}/specializations`
+				`${API_BASE_URL}/sectors/${sectorId}/specializations`
 			);
 			if (response.ok) {
 				const data = (await response.json()) as Specialization[];
@@ -62,7 +60,7 @@ function SimpleWorkingApp(): JSX.Element {
 	const fetchQuizzes = async (): Promise<void> => {
 		try {
 			console.log('Fetching quizzes...');
-			const response = await fetch(`${API_BASE}/quizzes`);
+			const response = await fetch(`${API_BASE_URL}/quizzes`);
 			if (response.ok) {
 				const data = (await response.json()) as Quiz[];
 				console.log('Quizzes received:', data);
@@ -80,7 +78,7 @@ function SimpleWorkingApp(): JSX.Element {
 		setError('');
 		try {
 			console.log('Registering user:', formData);
-			const response = await fetch(`${API_BASE}/users/register`, {
+			const response = await fetch(`${API_BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -111,7 +109,7 @@ function SimpleWorkingApp(): JSX.Element {
 		setError('');
 		try {
 			console.log('Logging in user:', formData.email);
-			const response = await fetch(`${API_BASE}/users/login`, {
+			const response = await fetch(`${API_BASE_URL}/users/login`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

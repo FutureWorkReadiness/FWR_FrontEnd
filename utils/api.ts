@@ -2,7 +2,8 @@ import type { Branch, Quiz, Sector, Specialization, User } from '../src/types';
 
 // API service for connecting to FastAPI backend
 
-export const API_BASE_URL: string = import.meta.env.VITE_API_URL;
+const rawApiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+export const API_BASE_URL: string = rawApiUrl.replace(/\/$/, '');
 
 type ApiRequestOptions = Omit<RequestInit, 'body' | 'headers'> & {
 	body?: unknown;
@@ -308,7 +309,7 @@ export const testConnection = async (): Promise<{
 	error?: string;
 }> => {
 	try {
-		const response = await fetch('http://localhost:8000/');
+		const response = await fetch(`${API_BASE_URL}/`);
 		const data = await response.json();
 		return { success: true, data };
 	} catch (error) {

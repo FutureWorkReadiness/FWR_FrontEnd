@@ -1,5 +1,5 @@
 // Authentication utilities with FastAPI backend integration
-import { authAPI, testConnection } from './api';
+import { API_BASE_URL, authAPI, testConnection } from './api';
 import type { User } from '../src/types';
 
 type Numeric = number | string | null | undefined;
@@ -307,7 +307,8 @@ export const refreshUserData = async (
 	userId: number | string
 ): Promise<AuthResult> => {
 	try {
-		const response = await fetch(`http://localhost:8000/api/users/${userId}`);
+		const response = await fetch(`${API_BASE_URL}/users/${userId}`);
+		// const response = await fetch(`${API_BASE_URL}/users/${userId}`);
 		if (!response.ok) {
 			throw new Error('Failed to refresh user data');
 		}

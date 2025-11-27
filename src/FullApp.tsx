@@ -1,5 +1,6 @@
 import React from 'react';
 import type { User, Sector, Specialization, Quiz, FormData } from './types';
+import { API_BASE_URL } from '../utils/api';
 
 type Page = 'landing' | 'onboarding' | 'dashboard';
 
@@ -35,7 +36,7 @@ function FullApp(): JSX.Element {
 
 	const fetchSectors = async () => {
 		try {
-			const response = await fetch('http://localhost:8000/api/sectors');
+			const response = await fetch(`${API_BASE_URL}/sectors`);
 			if (response.ok) {
 				const data = await response.json();
 				setSectors(data);
@@ -50,7 +51,7 @@ function FullApp(): JSX.Element {
 	): Promise<void> => {
 		try {
 			const response = await fetch(
-				`http://localhost:8000/api/sectors/${sectorId}/specializations`
+				`${API_BASE_URL}/sectors/${sectorId}/specializations`
 			);
 			if (response.ok) {
 				const data = (await response.json()) as Specialization[];
@@ -63,7 +64,7 @@ function FullApp(): JSX.Element {
 
 	const fetchQuizzes = async () => {
 		try {
-			const response = await fetch('http://localhost:8000/api/quizzes');
+			const response = await fetch(`${API_BASE_URL}/quizzes`);
 			if (response.ok) {
 				const data = await response.json();
 				setQuizzes(data);
@@ -81,7 +82,7 @@ function FullApp(): JSX.Element {
 		setError('');
 
 		try {
-			const response = await fetch('http://localhost:8000/api/users/register', {
+			const response = await fetch(`${API_BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -118,7 +119,7 @@ function FullApp(): JSX.Element {
 		setError('');
 
 		try {
-			const response = await fetch('http://localhost:8000/api/users/login', {
+			const response = await fetch(`${API_BASE_URL}/users/login`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

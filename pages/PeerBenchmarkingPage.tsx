@@ -13,6 +13,7 @@ import {
 	BarChart3
 } from 'lucide-react';
 import type { PeerBenchmarkData } from '../src/types';
+import { API_BASE_URL } from '../utils/api';
 
 export default function PeerBenchmarkingPage(): JSX.Element {
 	const [benchmarkData, setBenchmarkData] = useState<PeerBenchmarkData | null>(
@@ -38,7 +39,7 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 
 		try {
 			const response = await fetch(
-				`http://localhost:8000/api/users/${currentUser.id}/peer-benchmark`
+				`${API_BASE_URL}/users/${currentUser.id}/peer-benchmark`
 			);
 			const result = await response.json();
 

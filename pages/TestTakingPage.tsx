@@ -9,6 +9,7 @@ import {
 	X
 } from 'lucide-react';
 import { getCurrentUser, refreshUserData } from '../utils/auth';
+import { API_BASE_URL } from '../utils/api';
 import { calculateTestScore, saveTestResult } from '../utils/testSystem';
 import type { User, Test } from '../src/types';
 
@@ -55,9 +56,7 @@ const TestTakingPage = (): JSX.Element => {
 				}
 
 				console.log(`Loading quiz with ID: ${quizId}`);
-				const response = await fetch(
-					`http://localhost:8000/api/quizzes/${quizId}`
-				);
+				const response = await fetch(`${API_BASE_URL}/quizzes/${quizId}`);
 
 				if (!response.ok) {
 					const errorText = await response.text();
@@ -196,7 +195,7 @@ const TestTakingPage = (): JSX.Element => {
 					throw new Error(`Cannot determine quiz ID for submission`);
 				}
 				const startResponse = await fetch(
-					`http://localhost:8000/api/quizzes/${quizIdForSubmit}/start?user_id=${user.id}`,
+					`${API_BASE_URL}/quizzes/${quizIdForSubmit}/start?user_id=${user.id}`,
 					{
 						method: 'POST',
 						headers: { 'Content-Type': 'application/json' }
@@ -223,7 +222,7 @@ const TestTakingPage = (): JSX.Element => {
 
 					// Submit quiz answers - backend endpoint: /api/attempts/{attempt_id}/submit
 					const submitResponse = await fetch(
-						`http://localhost:8000/api/attempts/${attemptId}/submit`,
+						`${API_BASE_URL}/attempts/${attemptId}/submit`,
 						{
 							method: 'POST',
 							headers: { 'Content-Type': 'application/json' },

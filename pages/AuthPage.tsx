@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loginUser, registerUser } from '../utils/auth';
+import { API_BASE_URL } from '../utils/api';
 
-const apiUrl = import.meta.env.VITE_API_URL;
-console.log('API URL:', apiUrl);
+console.log('API URL:', API_BASE_URL);
 
 interface AuthFormData {
 	name: string;

@@ -32,10 +32,11 @@ cd FWR_FrontEnd
 
 #### Backend Configuration
 
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory and provide your API base URL (defaults to the local FastAPI server):
 
 ```bash
 touch .env
+echo "VITE_API_URL=http://localhost:8000" >> .env
 ```
 
 ### 3. Start the Application with Docker
@@ -99,13 +100,13 @@ docker-compose up frontend
 
 After starting the services, verify everything is running:
 
-1. **Backend API Documentation**: http://localhost:8000/docs
+1. **Backend API Documentation**: `${VITE_API_URL}/docs` (defaults to http://localhost:8000/docs)
 2. **Frontend Application**: http://localhost:3000
 3. **Database**: localhost:5432 (use any PostgreSQL client)
 
 **Test the backend API:**
 ```bash
-curl http://localhost:8000/api/health
+curl ${VITE_API_URL:-http://localhost:8000}/api/health
 ```
 
 **Expected response:**
@@ -265,13 +266,13 @@ python3 -m app.replace_frontend_questions
 
 ```bash
 # Get all specializations
-curl http://localhost:8000/api/specializations
+curl ${VITE_API_URL:-http://localhost:8000}/api/specializations
 
 # Get quizzes for a specialization
-curl http://localhost:8000/api/specializations/1/quizzes
+curl ${VITE_API_URL:-http://localhost:8000}/api/specializations/1/quizzes
 
 # Get quiz by ID
-curl http://localhost:8000/api/quizzes/20
+curl ${VITE_API_URL:-http://localhost:8000}/api/quizzes/20
 ```
 
 ### Test Frontend

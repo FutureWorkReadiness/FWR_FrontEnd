@@ -9,8 +9,7 @@ import type {
 	Message,
 	FormDataType
 } from '../src/types';
-
-const API_BASE = import.meta.env.VITE_API_URL;
+import { API_BASE_URL } from '../utils/api';
 
 interface FormDataState {
 	sector: { name: string; description: string };
@@ -52,23 +51,23 @@ function AdminPage(): JSX.Element {
 		setLoading(true);
 		try {
 			if (activeTab === 'stats') {
-				const response = await fetch(`${API_BASE}/admin/stats`);
+				const response = await fetch(`${API_BASE_URL}/admin/stats`);
 				const data = (await response.json()) as AdminStats;
 				setStats(data);
 			} else if (activeTab === 'sectors') {
-				const response = await fetch(`${API_BASE}/admin/sectors`);
+				const response = await fetch(`${API_BASE_URL}/admin/sectors`);
 				const data = (await response.json()) as AdminSector[];
 				setSectors(data);
 			} else if (activeTab === 'branches') {
-				const response = await fetch(`${API_BASE}/admin/branches`);
+				const response = await fetch(`${API_BASE_URL}/admin/branches`);
 				const data = (await response.json()) as AdminBranch[];
 				setBranches(data);
 			} else if (activeTab === 'specializations') {
-				const response = await fetch(`${API_BASE}/admin/specializations`);
+				const response = await fetch(`${API_BASE_URL}/admin/specializations`);
 				const data = (await response.json()) as AdminSpecialization[];
 				setSpecializations(data);
 			} else if (activeTab === 'users') {
-				const response = await fetch(`${API_BASE}/admin/users`);
+				const response = await fetch(`${API_BASE_URL}/admin/users`);
 				const data = (await response.json()) as AdminUser[];
 				setUsers(data);
 			}
@@ -91,7 +90,7 @@ function AdminPage(): JSX.Element {
 	const handleCreate = async (type: FormDataType): Promise<void> => {
 		setLoading(true);
 		try {
-			const endpoint = `${API_BASE}/admin/${type}`;
+			const endpoint = `${API_BASE_URL}/admin/${type}`;
 			// Map form data keys to API endpoints
 			const formKey =
 				type === 'sectors'
@@ -144,7 +143,7 @@ function AdminPage(): JSX.Element {
 	): Promise<void> => {
 		setLoading(true);
 		try {
-			const response = await fetch(`${API_BASE}/admin/${type}/${id}`, {
+			const response = await fetch(`${API_BASE_URL}/admin/${type}/${id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(updates)
@@ -171,7 +170,7 @@ function AdminPage(): JSX.Element {
 
 		setLoading(true);
 		try {
-			const response = await fetch(`${API_BASE}/admin/${type}/${id}`, {
+			const response = await fetch(`${API_BASE_URL}/admin/${type}/${id}`, {
 				method: 'DELETE'
 			});
 

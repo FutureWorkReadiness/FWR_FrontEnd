@@ -10,6 +10,7 @@ import {
 	CheckCircle
 } from 'lucide-react';
 import { buttonStyles } from '../utils/designSystem';
+import { API_BASE_URL } from '../utils/api';
 import type { User } from '../src/types';
 
 interface Goal {
@@ -94,7 +95,7 @@ export default function GoalsPage(): JSX.Element {
 		try {
 			// Fetch readiness
 			const readinessRes = await fetch(
-				`http://localhost:8000/api/dashboard?user_id=${userId}`
+				`${API_BASE_URL}/dashboard?user_id=${userId}`
 			);
 			if (readinessRes.ok) {
 				const readinessData = await readinessRes.json();
@@ -102,9 +103,7 @@ export default function GoalsPage(): JSX.Element {
 			}
 
 			// Fetch goals
-			const goalsRes = await fetch(
-				`http://localhost:8000/api/goals?user_id=${userId}`
-			);
+			const goalsRes = await fetch(`${API_BASE_URL}/goals?user_id=${userId}`);
 			if (goalsRes.ok) {
 				const goalsData = await goalsRes.json();
 				setGoals(goalsData as Goal[]);
@@ -112,7 +111,7 @@ export default function GoalsPage(): JSX.Element {
 
 			// Fetch journal entries
 			const journalRes = await fetch(
-				`http://localhost:8000/api/journal?user_id=${userId}&limit=10`
+				`${API_BASE_URL}/journal?user_id=${userId}&limit=10`
 			);
 			if (journalRes.ok) {
 				const journalData = await journalRes.json();
@@ -146,14 +145,11 @@ export default function GoalsPage(): JSX.Element {
 			};
 			console.log('Sending payload:', payload);
 
-			const res = await fetch(
-				`http://localhost:8000/api/goals?user_id=${user.id}`,
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(payload)
-				}
-			);
+			const res = await fetch(`${API_BASE_URL}/goals?user_id=${user.id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
 
 			console.log('Response status:', res.status);
 
@@ -189,7 +185,7 @@ export default function GoalsPage(): JSX.Element {
 		if (!user || !editingGoal) return;
 		try {
 			const res = await fetch(
-				`http://localhost:8000/api/goals/${editingGoal.id}?user_id=${user.id}`,
+				`${API_BASE_URL}/goals/${editingGoal.id}?user_id=${user.id}`,
 				{
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
@@ -219,7 +215,7 @@ export default function GoalsPage(): JSX.Element {
 		if (!window.confirm('Are you sure you want to delete this goal?')) return;
 		try {
 			const res = await fetch(
-				`http://localhost:8000/api/goals/${goalId}?user_id=${user.id}`,
+				`${API_BASE_URL}/goals/${goalId}?user_id=${user.id}`,
 				{
 					method: 'DELETE'
 				}
@@ -240,7 +236,7 @@ export default function GoalsPage(): JSX.Element {
 		if (!user) return;
 		try {
 			const res = await fetch(
-				`http://localhost:8000/api/goals/${goalId}/progress?user_id=${user.id}&current_value=${currentValue}`,
+				`${API_BASE_URL}/goals/${goalId}/progress?user_id=${user.id}&current_value=${currentValue}`,
 				{
 					method: 'PATCH'
 				}
@@ -260,14 +256,11 @@ export default function GoalsPage(): JSX.Element {
 		e.preventDefault();
 		if (!user) return;
 		try {
-			const res = await fetch(
-				`http://localhost:8000/api/journal?user_id=${user.id}`,
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(journalForm)
-				}
-			);
+			const res = await fetch(`${API_BASE_URL}/journal?user_id=${user.id}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(journalForm)
+			});
 			if (res.ok) {
 				await fetchData(user.id);
 				setShowJournalForm(false);
@@ -287,7 +280,7 @@ export default function GoalsPage(): JSX.Element {
 			return;
 		try {
 			const res = await fetch(
-				`http://localhost:8000/api/journal/${entryId}?user_id=${user.id}`,
+				`${API_BASE_URL}/journal/${entryId}?user_id=${user.id}`,
 				{
 					method: 'DELETE'
 				}

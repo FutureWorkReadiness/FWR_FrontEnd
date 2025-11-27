@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Sector, Specialization, Quiz, User } from '../src/types';
+import { API_BASE_URL } from '../utils/api';
 
 const DatabaseTestPage = (): JSX.Element => {
 	const [sectors, setSectors] = useState<Sector[]>([]);
@@ -9,15 +10,13 @@ const DatabaseTestPage = (): JSX.Element => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string>('');
 
-	const API_BASE = import.meta.env.VITE_API_URL;
-
 	// Test database connection by fetching sectors
 	const testDatabaseConnection = async () => {
 		try {
 			setLoading(true);
 			setError('');
 
-			const response = await fetch(`${API_BASE}/sectors`);
+			const response = await fetch(`${API_BASE_URL}/sectors`);
 			if (!response.ok) throw new Error('Failed to fetch sectors');
 
 			const data = (await response.json()) as { sectors?: Sector[] };
@@ -27,7 +26,7 @@ const DatabaseTestPage = (): JSX.Element => {
 			// If we have sectors, fetch specializations for the first one
 			if (sectorsArray.length > 0) {
 				const sectorsResponse = await fetch(
-					`${API_BASE}/sectors/${sectorsArray[0].id}/specializations`
+					`${API_BASE_URL}/sectors/${sectorsArray[0].id}/specializations`
 				);
 				if (sectorsResponse.ok) {
 					const specsData = (await sectorsResponse.json()) as {
@@ -38,7 +37,7 @@ const DatabaseTestPage = (): JSX.Element => {
 			}
 
 			// Fetch quizzes
-			const quizzesResponse = await fetch(`${API_BASE}/quizzes`);
+			const quizzesResponse = await fetch(`${API_BASE_URL}/quizzes`);
 			if (quizzesResponse.ok) {
 				const quizzesData = (await quizzesResponse.json()) as {
 					quizzes?: Quiz[];
@@ -65,7 +64,7 @@ const DatabaseTestPage = (): JSX.Element => {
 				name: 'Test User'
 			};
 
-			const response = await fetch(`${API_BASE}/register`, {
+			const response = await fetch(`${API_BASE_URL}/register`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'

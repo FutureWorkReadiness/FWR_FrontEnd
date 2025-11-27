@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { User } from '../src/types';
+import { API_BASE_URL } from '../utils/api';
 
 interface RecentAttempt {
 	id: string | number;
@@ -48,7 +49,7 @@ export default function WorkingDashboardPage(): JSX.Element {
 			setError(null);
 			try {
 				const res = await fetch(
-					`http://localhost:8000/api/dashboard?user_id=${parsed.id}`
+					`${API_BASE_URL}/dashboard?user_id=${parsed.id}`
 				);
 				if (!res.ok) {
 					const t = await res.text();
@@ -102,7 +103,7 @@ export default function WorkingDashboardPage(): JSX.Element {
 				setError(null);
 				try {
 					const res = await fetch(
-						`http://localhost:8000/api/dashboard?user_id=${parsed.id}`
+						`${API_BASE_URL}/dashboard?user_id=${parsed.id}`
 					);
 					if (!res.ok) {
 						const t = await res.text();

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { getReadinessSnapshot } from '../utils/testSystem';
 import { cardStyles } from '../utils/designSystem';
+import { API_BASE_URL } from '../utils/api';
 import type { Test, TestResult } from '../src/types';
 
 interface LocationState {
@@ -69,9 +70,7 @@ const TestResultsPage = (): JSX.Element => {
 			setLoading(true);
 			setError(null);
 			try {
-				const res = await fetch(
-					`http://localhost:8000/api/results/${attemptId}`
-				);
+				const res = await fetch(`${API_BASE_URL}/results/${attemptId}`);
 				if (!res.ok) {
 					const t = await res.text();
 					throw new Error(`Results error ${res.status}: ${t}`);

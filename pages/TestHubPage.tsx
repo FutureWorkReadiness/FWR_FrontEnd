@@ -13,6 +13,7 @@ import {
 	cardStyles,
 	getDifficultyColor
 } from '../utils/designSystem';
+import { API_BASE_URL } from '../utils/api';
 import type { Test, Quiz } from '../src/types';
 
 const TestHubPage = (): JSX.Element => {
@@ -46,7 +47,7 @@ const TestHubPage = (): JSX.Element => {
 			}
 
 			// Fetch quizzes for user's specialization only
-			const url = `http://localhost:8000/api/specializations/${specializationId}/quizzes`;
+			const url = `${API_BASE_URL}/specializations/${specializationId}/quizzes`;
 
 			const response = await fetch(url);
 			if (!response.ok) throw new Error('Failed to fetch quizzes');

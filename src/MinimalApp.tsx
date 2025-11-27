@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Sector, Specialization, Quiz, UserPreferences } from './types';
+import { API_BASE_URL } from '../utils/api';
 
 // Simple working components
 export function WorkingOnboarding(): JSX.Element {
@@ -19,7 +20,7 @@ export function WorkingOnboarding(): JSX.Element {
 
 	const fetchSectors = async (): Promise<void> => {
 		try {
-			const response = await fetch('http://localhost:8000/api/sectors');
+			const response = await fetch(`${API_BASE_URL}/sectors`);
 			if (!response.ok) throw new Error('Failed to fetch sectors');
 			const data = (await response.json()) as Sector[];
 			setSectors(data);
@@ -38,7 +39,7 @@ export function WorkingOnboarding(): JSX.Element {
 		if (sectorId) {
 			try {
 				const response = await fetch(
-					`http://localhost:8000/api/sectors/${sectorId}/specializations`
+					`${API_BASE_URL}/sectors/${sectorId}/specializations`
 				);
 				if (!response.ok) throw new Error('Failed to fetch specializations');
 				const data = (await response.json()) as Specialization[];
@@ -249,7 +250,8 @@ export function WorkingDashboard(): JSX.Element {
 
 	const fetchQuizzes = async (): Promise<void> => {
 		try {
-			const response = await fetch('http://localhost:8000/api/quizzes');
+			const response = await fetch(`${API_BASE_URL}/quizzes`);
+			const response = await fetch(`${API_BASE_URL}/quizzes`);
 			if (response.ok) {
 				const data = (await response.json()) as Quiz[];
 				setQuizzes(data);
@@ -580,7 +582,7 @@ function MinimalApp(): JSX.Element {
 						🧪 Test Your Backend
 					</h2>
 					<p style={{ color: '#6b7280', marginBottom: '1rem' }}>
-						Your backend is running on <strong>http://localhost:8000</strong>
+						Your backend is running on <strong>{API_BASE_URL}</strong>
 					</p>
 					<div
 						style={{
@@ -590,7 +592,7 @@ function MinimalApp(): JSX.Element {
 							flexWrap: 'wrap'
 						}}>
 						<a
-							href='http://localhost:8000/docs'
+							href={`${API_BASE_URL}/docs`}
 							target='_blank'
 							rel='noopener noreferrer'
 							style={{
@@ -604,7 +606,7 @@ function MinimalApp(): JSX.Element {
 							📚 API Docs
 						</a>
 						<a
-							href='http://localhost:8000/api/getSectors'
+							href={`${API_BASE_URL}/getSectors`}
 							target='_blank'
 							rel='noopener noreferrer'
 							style={{
@@ -633,7 +635,7 @@ function MinimalApp(): JSX.Element {
 					<br />
 					<strong>Frontend:</strong> http://localhost:3009
 					<br />
-					<strong>Backend:</strong> http://localhost:8000
+					<strong>Backend:</strong> {API_BASE_URL}
 				</div>
 			</div>
 		</div>

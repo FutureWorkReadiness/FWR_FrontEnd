@@ -1,5 +1,6 @@
 import React from 'react';
 import type { User, Sector, Specialization, Quiz } from './types';
+import { API_BASE_URL } from '../utils/api';
 
 type Page = 'login' | 'onboarding' | 'dashboard';
 
@@ -31,7 +32,7 @@ function TestApp(): JSX.Element {
 
 	const fetchSectors = async (): Promise<void> => {
 		try {
-			const response = await fetch('http://localhost:8000/api/sectors');
+			const response = await fetch(`${API_BASE_URL}/sectors`);
 			if (response.ok) {
 				const data = (await response.json()) as Sector[];
 				setSectors(data);
@@ -43,7 +44,7 @@ function TestApp(): JSX.Element {
 
 	const fetchQuizzes = async (): Promise<void> => {
 		try {
-			const response = await fetch('http://localhost:8000/api/quizzes');
+			const response = await fetch(`${API_BASE_URL}/quizzes`);
 			if (response.ok) {
 				const data = (await response.json()) as Quiz[];
 				setQuizzes(data);
@@ -61,7 +62,7 @@ function TestApp(): JSX.Element {
 		setError('');
 
 		try {
-			const response = await fetch('http://localhost:8000/api/users/register', {
+			const response = await fetch(`${API_BASE_URL}/users/register`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
@@ -100,7 +101,7 @@ function TestApp(): JSX.Element {
 			formData.append('username', email);
 			formData.append('password', password);
 
-			const response = await fetch('http://localhost:8000/api/users/login', {
+			const response = await fetch(`${API_BASE_URL}/users/login`, {
 				method: 'POST',
 				body: formData
 			});
@@ -127,7 +128,7 @@ function TestApp(): JSX.Element {
 		if (sectorId) {
 			try {
 				const response = await fetch(
-					`http://localhost:8000/api/sectors/${sectorId}/specializations`
+					`${API_BASE_URL}/sectors/${sectorId}/specializations`
 				);
 				if (response.ok) {
 					const data = (await response.json()) as Specialization[];

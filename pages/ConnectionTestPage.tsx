@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { testConnection, authAPI, quizAPI } from '../utils/api';
+import { API_BASE_URL, testConnection, authAPI, quizAPI } from '../utils/api';
 
 interface TestResult {
 	success: boolean;
@@ -186,7 +186,7 @@ const ConnectionTestPage = (): JSX.Element => {
 							Rerun Tests
 						</button>
 						<a
-							href='http://localhost:8000/docs'
+							href={`${API_BASE_URL}/docs`}
 							target='_blank'
 							rel='noopener noreferrer'
 							className='bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors'>
