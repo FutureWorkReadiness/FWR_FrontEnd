@@ -150,7 +150,7 @@ export default function DashboardPage(): JSX.Element {
 			description: 'Test your understanding with comprehensive assessments',
 			icon: BookOpen,
 			color: 'bg-[#3A7AFE]',
-			onClick: () => navigate('/test-hub')
+			onClick: () => handleNavigation('/test-hub')
 		},
 		{
 			id: 'peer-benchmark',
@@ -158,7 +158,7 @@ export default function DashboardPage(): JSX.Element {
 			description: 'Compare your scores with peers in your specialization',
 			icon: TrendingUp,
 			color: 'bg-[#3A7AFE]',
-			onClick: () => navigate('/peer-benchmark')
+			onClick: () => handleNavigation('/peer-benchmark')
 		},
 		{
 			id: 'goals',
@@ -166,9 +166,25 @@ export default function DashboardPage(): JSX.Element {
 			description: 'Track your learning objectives and progress',
 			icon: Target,
 			color: 'bg-[#4CAF50]',
-			onClick: () => navigate('/goals')
+			onClick: () => handleNavigation('/goals')
 		}
 	];
+
+	const hasSpecialization =
+		specializationId !== null &&
+		specializationId !== undefined &&
+		specializationName !== 'Not specified' &&
+		specializationName !== null;
+
+	// Helper function to handle navigation with specialization check
+	const handleNavigation = (path: string): void => {
+		if (!hasSpecialization) {
+			showToast('info', 'Please complete your profile setup first');
+			navigate('/sector-selection');
+		} else {
+			navigate(path);
+		}
+	};
 
 	return (
 		<motion.div
@@ -176,38 +192,50 @@ export default function DashboardPage(): JSX.Element {
 			initial='hidden'
 			animate='visible'
 			variants={containerVariants}>
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12'>
-				{/* Header */}
-				<motion.div
-					className='mb-6 md:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white rounded-xl p-4 md:p-6 shadow-sm border border-[#E5E7EB]'
-					variants={itemVariants}>
-					<div className='flex-1'>
-						<h1 className='text-2xl md:text-3xl lg:text-4xl font-bold text-[#1C1C1C] mb-2'>
-							Welcome back, {currentUser?.name || 'User'}!
-						</h1>
-						<div className='flex items-center space-x-2 text-[#4B5563]'>
-							<Target className='w-4 h-4 md:w-5 md:h-5 text-[#3A7AFE] flex-shrink-0' />
-							<span className='text-xs md:text-sm font-medium'>
-								Specialization:{' '}
-								{loading ? (
-									<span className='inline-flex items-center'>
-										<Loader2 className='w-3 h-3 animate-spin mr-1' />
-										Loading...
+			{/* Navbar */}
+			<motion.nav
+				className='bg-white border-b border-gray-200 sticky top-0 z-50'
+				initial={{ y: -20, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				transition={{ duration: 0.4, ease: 'easeOut' }}>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+					<div className='flex justify-between items-center h-16 md:h-20'>
+						<div className='flex items-center space-x-4'>
+							<div className='w-10 h-10 bg-[#3A7AFE] rounded-lg flex items-center justify-center'>
+								<Zap className='w-6 h-6 text-white' />
+							</div>
+							<div>
+								<h1 className='text-base md:text-lg font-semibold text-[#1C1C1C]'>
+									Welcome back, {currentUser?.name || 'User'}!
+								</h1>
+								<div className='flex items-center space-x-2 text-[#4B5563]'>
+									<Target className='w-3 h-3 md:w-4 md:h-4 text-[#3A7AFE] flex-shrink-0' />
+									<span className='text-xs font-medium'>
+										{loading ? (
+											<span className='inline-flex items-center'>
+												<Loader2 className='w-3 h-3 animate-spin mr-1' />
+												Loading...
+											</span>
+										) : (
+											specializationName || 'Not specified'
+										)}
 									</span>
-								) : (
-									specializationName || 'Not specified'
-								)}
-							</span>
+								</div>
+							</div>
 						</div>
+						<button
+							onClick={handleLogout}
+							className='flex items-center space-x-2 px-4 py-2 text-[#4B5563] hover:text-[#DC2626] hover:bg-[#fef2f2] rounded-lg transition-colors duration-200'>
+							<LogOut className='w-4 h-4 md:w-5 md:h-5' />
+							<span className='font-medium text-sm md:text-base hidden sm:inline'>
+								Logout
+							</span>
+						</button>
 					</div>
-					<button
-						onClick={handleLogout}
-						className='flex items-center space-x-2 px-4 py-2 text-[#4B5563] hover:text-[#DC2626] hover:bg-[#fef2f2] rounded-lg transition-colors duration-200 w-full sm:w-auto justify-center'>
-						<LogOut className='w-4 h-4 md:w-5 md:h-5' />
-						<span className='font-medium text-sm md:text-base'>Logout</span>
-					</button>
-				</motion.div>
+				</div>
+			</motion.nav>
 
+			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12'>
 				{/* Main Content Grid */}
 				<div className='grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6'>
 					{/* Left Column - Main Content */}
@@ -340,11 +368,20 @@ export default function DashboardPage(): JSX.Element {
 									{currentRecommendation.category} Focus
 								</span>
 							</div>
-							<button
-								onClick={() => navigate('/test-hub')}
-								className='bg-white text-[#3A7AFE] px-4 py-2 rounded-lg font-semibold hover:bg-[#F7F9FC] transition-colors duration-200 text-sm md:text-base'>
-								Start Test
-							</button>
+							{hasSpecialization ? (
+								<button
+									onClick={() => handleNavigation('/test-hub')}
+									className='bg-white text-[#3A7AFE] px-4 py-2 rounded-lg font-semibold hover:bg-[#F7F9FC] transition-colors duration-200 text-sm md:text-base'>
+									Start Test
+								</button>
+							) : (
+								<button
+									onClick={() => navigate('/sector-selection')}
+									className='bg-white text-[#3A7AFE] px-4 py-2 rounded-lg font-semibold hover:bg-[#F7F9FC] transition-colors duration-200 text-sm md:text-base flex items-center space-x-2'>
+									<span>Get Started</span>
+									<Zap className='w-4 h-4' />
+								</button>
+							)}
 						</motion.div>
 
 						{/* Quick Access Cards */}
@@ -389,7 +426,7 @@ export default function DashboardPage(): JSX.Element {
 							</h2>
 							<nav className='space-y-2'>
 								<motion.button
-									onClick={() => navigate('/test-hub')}
+									onClick={() => handleNavigation('/test-hub')}
 									className='w-full flex items-center px-4 py-3 text-left hover:bg-[#F7F9FC] rounded-lg transition-colors duration-200 text-[#4B5563]'
 									whileHover={{ x: 4 }}
 									transition={{ duration: 0.2 }}>
@@ -397,7 +434,7 @@ export default function DashboardPage(): JSX.Element {
 									<span className='text-sm md:text-base'>Tests</span>
 								</motion.button>
 								<motion.button
-									onClick={() => navigate('/peer-benchmark')}
+									onClick={() => handleNavigation('/peer-benchmark')}
 									className='w-full flex items-center px-4 py-3 text-left hover:bg-[#F7F9FC] rounded-lg transition-colors duration-200 text-[#4B5563]'
 									whileHover={{ x: 4 }}
 									transition={{ duration: 0.2 }}>
@@ -405,7 +442,7 @@ export default function DashboardPage(): JSX.Element {
 									<span className='text-sm md:text-base'>Benchmarking</span>
 								</motion.button>
 								<motion.button
-									onClick={() => navigate('/goals')}
+									onClick={() => handleNavigation('/goals')}
 									className='w-full flex items-center px-4 py-3 text-left hover:bg-[#F7F9FC] rounded-lg transition-colors duration-200 text-[#4B5563]'
 									whileHover={{ x: 4 }}
 									transition={{ duration: 0.2 }}>
@@ -413,7 +450,7 @@ export default function DashboardPage(): JSX.Element {
 									<span className='text-sm md:text-base'>Goals</span>
 								</motion.button>
 								<motion.button
-									onClick={() => navigate('/test-results')}
+									onClick={() => handleNavigation('/test-results')}
 									className='w-full flex items-center px-4 py-3 text-left hover:bg-[#F7F9FC] rounded-lg transition-colors duration-200 text-[#4B5563]'
 									whileHover={{ x: 4 }}
 									transition={{ duration: 0.2 }}>

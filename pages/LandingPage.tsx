@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import SignUpModal from '../src/components/SignUpModal';
 import LoginModal from '../src/components/LoginModal';
+import Footer from '../src/components/Footer';
 
 export default function LandingPage() {
 	const [showLogin, setShowLogin] = useState(false);
@@ -28,14 +29,14 @@ export default function LandingPage() {
 		setShowLogin(true);
 	};
 
-	// Gentle animation variants - Educative.io style
+	// Gentle animation variants - Educative.io style (slower animations)
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		visible: {
 			opacity: 1,
 			transition: {
-				staggerChildren: 0.12,
-				delayChildren: 0.2
+				staggerChildren: 0.15,
+				delayChildren: 0.3
 			}
 		}
 	};
@@ -46,13 +47,11 @@ export default function LandingPage() {
 			opacity: 1,
 			y: 0,
 			transition: {
-				duration: 0.6,
+				duration: 0.8,
 				ease: [0.6, -0.05, 0.01, 0.99] as const
 			}
 		}
 	};
-
-	const currentYear = new Date().getFullYear();
 
 	return (
 		<motion.div
@@ -65,7 +64,7 @@ export default function LandingPage() {
 				className='bg-white border-b border-gray-200 sticky top-0 z-50'
 				initial={{ y: -20, opacity: 0 }}
 				animate={{ y: 0, opacity: 1 }}
-				transition={{ duration: 0.6, ease: 'easeOut' }}>
+				transition={{ duration: 0.5, ease: 'easeOut' }}>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex justify-between items-center h-16 md:h-20'>
 						<motion.div
@@ -268,108 +267,7 @@ export default function LandingPage() {
 			</section>
 
 			{/* Footer */}
-			<footer className='bg-white border-t border-gray-200 py-10 md:py-12'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-					<div className='grid md:grid-cols-4 gap-8 md:gap-12'>
-						{/* Brand */}
-						<div className='md:col-span-1'>
-							<div className='flex items-center space-x-3 mb-4'>
-								<div className='w-10 h-10 bg-[#3A7AFE] rounded-lg flex items-center justify-center'>
-									<Zap className='w-6 h-6 text-white' />
-								</div>
-								<span className='text-xl font-bold text-[#1D2433]'>
-									FutureReady
-								</span>
-							</div>
-							<p className='text-sm text-[#4B5563]'>
-								Preparing you for the future of work.
-							</p>
-						</div>
-
-						{/* Links */}
-						<div>
-							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Product</h4>
-							<ul className='space-y-2'>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Features
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Pricing
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										About
-									</a>
-								</li>
-							</ul>
-						</div>
-
-						<div>
-							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Legal</h4>
-							<ul className='space-y-2'>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Privacy Policy
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Terms of Service
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Contact
-									</a>
-								</li>
-							</ul>
-						</div>
-
-						<div>
-							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Support</h4>
-							<ul className='space-y-2'>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Help Center
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Documentation
-									</a>
-								</li>
-							</ul>
-						</div>
-					</div>
-
-					{/* Copyright */}
-					<div className='mt-8 md:mt-12 pt-8 border-t border-gray-200'>
-						<p className='text-sm text-[#4B5563] text-center'>
-							© {currentYear} FutureReady. All rights reserved.
-						</p>
-					</div>
-				</div>
-			</footer>
+			<Footer />
 
 			{/* Login Modal */}
 			<LoginModal

@@ -18,19 +18,20 @@ import {
 	Star
 } from 'lucide-react';
 import { getCurrentUser } from '../utils/auth';
+import Footer from '../src/components/Footer';
 
 export default function OnboardingPage(): JSX.Element {
 	const navigate = useNavigate();
 	const currentUser = getCurrentUser();
 
-	// Animation variants - matching LandingPage style
+	// Animation variants - matching LandingPage style (slower animations)
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		visible: {
 			opacity: 1,
 			transition: {
-				staggerChildren: 0.12,
-				delayChildren: 0.2
+				staggerChildren: 0.15,
+				delayChildren: 0.3
 			}
 		}
 	};
@@ -41,7 +42,7 @@ export default function OnboardingPage(): JSX.Element {
 			opacity: 1,
 			y: 0,
 			transition: {
-				duration: 0.6,
+				duration: 0.8,
 				ease: 'easeOut' as const
 			}
 		}
@@ -66,8 +67,6 @@ export default function OnboardingPage(): JSX.Element {
 		navigate('/dashboard');
 	};
 
-	const currentYear = new Date().getFullYear();
-
 	return (
 		<motion.div
 			className='min-h-screen bg-white'
@@ -79,7 +78,7 @@ export default function OnboardingPage(): JSX.Element {
 				className='bg-white border-b border-gray-200 sticky top-0 z-50'
 				initial={{ y: -20, opacity: 0 }}
 				animate={{ y: 0, opacity: 1 }}
-				transition={{ duration: 0.6, ease: 'easeOut' }}>
+				transition={{ duration: 0.5, ease: 'easeOut' }}>
 				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<div className='flex justify-between items-center h-16 md:h-20'>
 						<motion.div
@@ -428,111 +427,7 @@ export default function OnboardingPage(): JSX.Element {
 			</section>
 
 			{/* Footer */}
-			<footer className='bg-white border-t border-gray-200 py-10 md:py-12'>
-				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-					<div className='grid md:grid-cols-4 gap-8 md:gap-12'>
-						{/* Brand */}
-						<div className='md:col-span-1'>
-							<div className='flex items-center space-x-3 mb-4'>
-								<div className='w-10 h-10 bg-[#3A7AFE] rounded-lg flex items-center justify-center'>
-									<Zap className='w-6 h-6 text-white' />
-								</div>
-								<span className='text-xl font-bold text-[#1D2433]'>
-									FutureReady
-								</span>
-							</div>
-							<p className='text-sm text-[#4B5563]'>
-								Preparing you for the future of work.
-							</p>
-						</div>
-
-						{/* About */}
-						<div>
-							<h4 className='font-semibold text-[#1C1C1C] mb-4'>About</h4>
-							<ul className='space-y-2'>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Our Mission
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										How It Works
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Success Stories
-									</a>
-								</li>
-							</ul>
-						</div>
-
-						{/* Contact */}
-						<div>
-							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Contact</h4>
-							<ul className='space-y-2'>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Support
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Help Center
-									</a>
-								</li>
-								<li>
-									<a
-										href='#'
-										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
-										Get in Touch
-									</a>
-								</li>
-							</ul>
-						</div>
-
-						{/* Social */}
-						<div>
-							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Connect</h4>
-							<div className='flex space-x-4'>
-								<a
-									href='#'
-									className='w-10 h-10 rounded-lg bg-[#F7F9FC] hover:bg-[#3A7AFE] hover:text-white flex items-center justify-center transition-colors duration-200 text-[#4B5563]'>
-									<span className='text-sm font-semibold'>f</span>
-								</a>
-								<a
-									href='#'
-									className='w-10 h-10 rounded-lg bg-[#F7F9FC] hover:bg-[#3A7AFE] hover:text-white flex items-center justify-center transition-colors duration-200 text-[#4B5563]'>
-									<span className='text-sm font-semibold'>in</span>
-								</a>
-								<a
-									href='#'
-									className='w-10 h-10 rounded-lg bg-[#F7F9FC] hover:bg-[#3A7AFE] hover:text-white flex items-center justify-center transition-colors duration-200 text-[#4B5563]'>
-									<span className='text-sm font-semibold'>@</span>
-								</a>
-							</div>
-						</div>
-					</div>
-
-					{/* Copyright */}
-					<div className='mt-8 md:mt-12 pt-8 border-t border-gray-200'>
-						<p className='text-sm text-[#4B5563] text-center'>
-							© {currentYear} FutureReady. All rights reserved.
-						</p>
-					</div>
-				</div>
-			</footer>
+			<Footer />
 		</motion.div>
 	);
 }
