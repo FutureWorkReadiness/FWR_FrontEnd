@@ -1,15 +1,24 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Zap } from 'lucide-react';
-import { getCurrentUser } from '../../utils/auth';
+import { Zap, LogOut } from 'lucide-react';
+import { getCurrentUser, logoutUser } from '../../utils/auth';
+import { showToast } from '../lib/toastConfig';
 
 interface NavbarProps {
 	showSkipToDashboard?: boolean;
 }
 
-export default function Navbar({ showSkipToDashboard = false }: NavbarProps): JSX.Element {
+export default function Navbar({
+	showSkipToDashboard = false
+}: NavbarProps): JSX.Element {
 	const navigate = useNavigate();
 	const currentUser = getCurrentUser();
+
+	const handleLogout = (): void => {
+		logoutUser();
+		showToast('success', 'Logged out successfully');
+		navigate('/');
+	};
 
 	return (
 		<motion.nav
@@ -37,13 +46,23 @@ export default function Navbar({ showSkipToDashboard = false }: NavbarProps): JS
 							<button
 								onClick={() => navigate('/dashboard')}
 								className='text-[#4B5563] hover:text-[#3A7AFE] font-medium px-3 md:px-4 py-2 transition-colors duration-200'>
-								Skip to Dashboard
+								Your Dashboard
 							</button>
 						)}
 						{currentUser && (
-							<div className='text-sm text-[#4B5563] hidden sm:block'>
-								{currentUser.name || currentUser.email}
-							</div>
+							<>
+								<div className='text-sm text-[#4B5563] hidden sm:block'>
+									{currentUser.name || currentUser.email}
+								</div>
+								<button
+									onClick={handleLogout}
+									className='flex items-center space-x-2 px-3 md:px-4 py-2 text-[#4B5563] hover:text-[#DC2626] hover:bg-[#fef2f2] rounded-lg transition-colors duration-200'>
+									<LogOut className='w-4 h-4 md:w-5 md:h-5' />
+									<span className='font-medium text-sm md:text-base hidden sm:inline'>
+										Logout
+									</span>
+								</button>
+							</>
 						)}
 					</div>
 				</div>
@@ -51,4 +70,3 @@ export default function Navbar({ showSkipToDashboard = false }: NavbarProps): JS
 		</motion.nav>
 	);
 }
-

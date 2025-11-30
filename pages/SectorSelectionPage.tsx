@@ -37,6 +37,10 @@ export default function SectorSelectionPage(): JSX.Element {
 	const [branches, setBranches] = useState<Branch[]>([]);
 	const [specializations, setSpecializations] = useState<Specialization[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
+	const [loadingBranches, setLoadingBranches] = useState<boolean>(false);
+	const [loadingSpecializations, setLoadingSpecializations] =
+		useState<boolean>(false);
+	const [saving, setSaving] = useState<boolean>(false);
 	const [error, setError] = useState<string>('');
 	const navigate = useNavigate();
 
@@ -108,7 +112,7 @@ export default function SectorSelectionPage(): JSX.Element {
 			if (selectedSector) {
 				try {
 					setError('');
-					setLoading(true);
+					setLoadingBranches(true);
 					const branchesData = await getBranches(selectedSector);
 					setBranches(branchesData);
 				} catch (err) {
@@ -116,8 +120,11 @@ export default function SectorSelectionPage(): JSX.Element {
 					setError('Failed to load branches.');
 					setBranches([]);
 				} finally {
-					setLoading(false);
+					setLoadingBranches(false);
 				}
+			} else {
+				setBranches([]);
+				setLoadingBranches(false);
 			}
 		};
 
@@ -130,7 +137,7 @@ export default function SectorSelectionPage(): JSX.Element {
 			if (selectedBranch) {
 				try {
 					setError('');
-					setLoading(true);
+					setLoadingSpecializations(true);
 					const specsData = await getSpecializations(selectedBranch);
 					setSpecializations(specsData);
 				} catch (err) {
@@ -138,8 +145,11 @@ export default function SectorSelectionPage(): JSX.Element {
 					setError('Failed to load specializations.');
 					setSpecializations([]);
 				} finally {
-					setLoading(false);
+					setLoadingSpecializations(false);
 				}
+			} else {
+				setSpecializations([]);
+				setLoadingSpecializations(false);
 			}
 		};
 
@@ -173,7 +183,7 @@ export default function SectorSelectionPage(): JSX.Element {
 		}
 
 		try {
-			setLoading(true);
+			setSaving(true);
 			setError('');
 
 			// Get current user and save specialization selection
@@ -266,7 +276,7 @@ export default function SectorSelectionPage(): JSX.Element {
 				'error',
 				'Failed to save selections. Redirecting to dashboard...'
 			);
-			setLoading(false);
+			setSaving(false);
 			// Still allow navigation even if save fails
 			setTimeout(() => navigate('/dashboard'), 2000);
 		}
@@ -306,11 +316,7 @@ export default function SectorSelectionPage(): JSX.Element {
 	}
 
 	return (
-		<motion.div
-			className='min-h-screen bg-white flex flex-col'
-			initial='hidden'
-			animate='visible'
-			variants={containerVariants}>
+		<div className='min-h-screen bg-white flex flex-col'>
 			{/* Navigation */}
 			<Navbar showSkipToDashboard={true} />
 
@@ -319,7 +325,9 @@ export default function SectorSelectionPage(): JSX.Element {
 				<div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
 					<motion.div
 						className='bg-white rounded-2xl p-6 md:p-12 shadow-sm border border-[#E5E7EB]'
-						variants={itemVariants}>
+						initial='hidden'
+						animate='visible'
+						variants={containerVariants}>
 						{/* Header */}
 						<motion.div
 							className='text-center mb-8 md:mb-12'
@@ -438,7 +446,7 @@ export default function SectorSelectionPage(): JSX.Element {
 								<h2 className='text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-[#1C1C1C]'>
 									Choose Your Industry Sector
 								</h2>
-								{loading ? (
+								{loading && sectors.length === 0 ? (
 									<div className='text-center py-8'>
 										<motion.div
 											animate={{ rotate: 360 }}
@@ -500,7 +508,7 @@ export default function SectorSelectionPage(): JSX.Element {
 								<h2 className='text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-[#1C1C1C]'>
 									Choose Your Branch
 								</h2>
-								{loading ? (
+								{loadingBranches ? (
 									<div className='text-center py-8 text-[#4B5563]'>
 										<motion.div
 											animate={{ rotate: 360 }}
@@ -550,7 +558,7 @@ export default function SectorSelectionPage(): JSX.Element {
 								<h2 className='text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-[#1C1C1C]'>
 									Choose Your Specialization
 								</h2>
-								{loading ? (
+								{loadingSpecializations ? (
 									<div className='text-center py-8 text-[#4B5563]'>
 										<motion.div
 											animate={{ rotate: 360 }}
@@ -620,13 +628,13 @@ export default function SectorSelectionPage(): JSX.Element {
 							{currentStep === 3 && (
 								<button
 									onClick={handleComplete}
-									disabled={!selectedSpecialization || loading}
+									disabled={!selectedSpecialization || saving}
 									className={`px-6 py-3 border-none rounded-lg text-white flex items-center justify-center gap-2 transition-colors duration-200 w-full sm:w-auto ${
-										selectedSpecialization && !loading
+										selectedSpecialization && !saving
 											? 'bg-[#3A7AFE] hover:bg-[#2E6AE8] cursor-pointer'
 											: 'bg-[#9ca3af] cursor-not-allowed'
 									}`}>
-									{loading ? (
+									{saving ? (
 										<>
 											<Loader2 className='w-5 h-5 animate-spin' />
 											<span>Saving...</span>
@@ -664,6 +672,6 @@ export default function SectorSelectionPage(): JSX.Element {
 
 			{/* Footer */}
 			<Footer />
-		</motion.div>
+		</div>
 	);
 }
