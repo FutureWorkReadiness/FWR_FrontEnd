@@ -1,61 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
-	Code,
-	Heart,
-	Briefcase,
-	GraduationCap,
-	ShoppingBag,
-	Building2,
-	ArrowLeft,
 	ArrowRight,
-	CheckCircle2,
-	AlertCircle,
-	Loader2
+	Zap,
+	CheckCircle,
+	BookOpen,
+	Target,
+	TrendingUp,
+	Award,
+	BarChart3,
+	Users,
+	Rocket,
+	ArrowLeft,
+	FileText,
+	Brain,
+	Star
 } from 'lucide-react';
-import {
-	getSectors,
-	getBranches,
-	getSpecializations,
-	updateUserSpecialization
-} from '../utils/api';
 import { getCurrentUser } from '../utils/auth';
-import { showToast } from '../src/lib/toastConfig';
-import type { Sector, Branch, Specialization } from '../src/types';
 
 export default function OnboardingPage(): JSX.Element {
-	const [currentStep, setCurrentStep] = useState<number>(1);
-	const [selectedSector, setSelectedSector] = useState<string>('');
-	const [selectedBranch, setSelectedBranch] = useState<string>('');
-	const [selectedSpecialization, setSelectedSpecialization] =
-		useState<string>('');
-	const [sectors, setSectors] = useState<Sector[]>([]);
-	const [branches, setBranches] = useState<Branch[]>([]);
-	const [specializations, setSpecializations] = useState<Specialization[]>([]);
-	const [loading, setLoading] = useState<boolean>(true);
-	const [error, setError] = useState<string>('');
 	const navigate = useNavigate();
+	const currentUser = getCurrentUser();
 
-	// Icon mapping for sectors using lucide-react
-	const sectorIcons: Record<
-		string,
-		React.ComponentType<{ className?: string }>
-	> = {
-		Technology: Code,
-		Healthcare: Heart,
-		Finance: Briefcase,
-		Education: GraduationCap,
-		Retail: ShoppingBag
-	};
-
-	// Animation variants
+	// Animation variants - matching LandingPage style
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		visible: {
 			opacity: 1,
 			transition: {
-				staggerChildren: 0.1,
+				staggerChildren: 0.12,
 				delayChildren: 0.2
 			}
 		}
@@ -67,218 +41,32 @@ export default function OnboardingPage(): JSX.Element {
 			opacity: 1,
 			y: 0,
 			transition: {
-				duration: 0.5,
+				duration: 0.6,
 				ease: 'easeOut' as const
 			}
 		}
 	};
 
-	// Load sectors on component mount
-	useEffect(() => {
-		const loadSectors = async () => {
-			try {
-				setLoading(true);
-				setError('');
-				const sectorsData = await getSectors();
-				console.log('Loaded sectors:', sectorsData);
-				setSectors(sectorsData);
-				if (sectorsData.length === 0) {
-					setError(
-						'No sectors found. Please check if the database has been populated.'
-					);
-				}
-			} catch (err) {
-				console.error('Failed to load sectors:', err);
-				setError(
-					'Failed to load sectors. Please check if the backend is running.'
-				);
-			} finally {
-				setLoading(false);
-			}
-		};
+	const handleGetStarted = () => {
+		// Check if user has a specialization
+		const hasSpecialization =
+			currentUser?.specializationId !== null &&
+			currentUser?.specializationId !== undefined;
 
-		loadSectors();
-	}, []);
-
-	// Load branches when sector is selected
-	useEffect(() => {
-		const loadBranches = async () => {
-			if (selectedSector) {
-				try {
-					setError('');
-					setLoading(true);
-					const branchesData = await getBranches(selectedSector);
-					setBranches(branchesData);
-				} catch (err) {
-					console.error('Failed to load branches:', err);
-					setError('Failed to load branches.');
-					setBranches([]);
-				} finally {
-					setLoading(false);
-				}
-			}
-		};
-
-		loadBranches();
-	}, [selectedSector]);
-
-	// Load specializations when branch is selected
-	useEffect(() => {
-		const loadSpecializations = async () => {
-			if (selectedBranch) {
-				try {
-					setError('');
-					setLoading(true);
-					const specsData = await getSpecializations(selectedBranch);
-					setSpecializations(specsData);
-				} catch (err) {
-					console.error('Failed to load specializations:', err);
-					setError('Failed to load specializations.');
-					setSpecializations([]);
-				} finally {
-					setLoading(false);
-				}
-			}
-		};
-
-		loadSpecializations();
-	}, [selectedBranch]);
-
-	const handleSectorSelect = (sectorId: string | number): void => {
-		setSelectedSector(String(sectorId));
-		setSelectedBranch('');
-		setSelectedSpecialization('');
-		setCurrentStep(2);
-	};
-
-	const handleBranchSelect = (branchId: string | number): void => {
-		setSelectedBranch(String(branchId));
-		setSelectedSpecialization('');
-		setCurrentStep(3);
-	};
-
-	const handleSpecializationSelect = (
-		specializationId: string | number
-	): void => {
-		setSelectedSpecialization(String(specializationId));
-	};
-
-	const handleComplete = async () => {
-		if (!selectedSpecialization) {
-			setError('Please select a specialization');
-			showToast('error', 'Please select a specialization to continue');
-			return;
-		}
-
-		try {
-			setLoading(true);
-			setError('');
-
-			// Get current user and save specialization selection
-			const currentUser = getCurrentUser();
-			if (currentUser && currentUser.id) {
-				try {
-					const result = await updateUserSpecialization(
-						currentUser.id,
-						parseInt(selectedSpecialization)
-					);
-					if (result && result.success) {
-						// Backend returns updated user object
-						const userData = result.user || result;
-						if (userData && userData.id) {
-							// Map backend response to frontend format
-							const updatedUser = {
-								id: userData.id,
-								email: userData.email,
-								name: userData.name,
-								specializationId: userData.specialization_id,
-								specialization_id: userData.specialization_id,
-								readinessScore: userData.readiness_score || 0,
-								technicalScore: userData.technical_score || 0,
-								softSkillsScore: userData.soft_skills_score || 0,
-								leadershipScore: userData.leadership_score || 0,
-								createdAt: userData.created_at
-							};
-							localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-						} else {
-							// Fallback: update localStorage with specializationId
-							const updatedUser = {
-								...currentUser,
-								specializationId: parseInt(selectedSpecialization),
-								specialization_id: parseInt(selectedSpecialization)
-							};
-							localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-						}
-						showToast('success', 'Profile setup complete!');
-						navigate('/dashboard');
-					} else {
-						throw new Error(result?.error || 'Failed to save specialization');
-					}
-				} catch (saveError) {
-					console.warn('Failed to save specialization to backend:', saveError);
-					// Still continue - update localStorage anyway
-					const updatedUser = {
-						...currentUser,
-						specializationId: parseInt(selectedSpecialization),
-						specialization_id: parseInt(selectedSpecialization)
-					};
-					localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-					showToast('success', 'Profile setup complete!');
-					navigate('/dashboard');
-				}
-			} else {
-				showToast('error', 'User session not found. Please log in again.');
-				navigate('/');
-			}
-		} catch (err) {
-			const error = err instanceof Error ? err : new Error('Unknown error');
-			console.error('Failed to save specialization:', error);
-			setError(
-				error.message ||
-					'Failed to save selections. You can continue to dashboard.'
-			);
-			showToast(
-				'error',
-				'Failed to save selections. Redirecting to dashboard...'
-			);
-			setLoading(false);
-			// Still allow navigation even if save fails
-			setTimeout(() => navigate('/dashboard'), 2000);
-		}
-	};
-
-	const handleBack = () => {
-		if (currentStep === 3) {
-			setCurrentStep(2);
-			setSelectedSpecialization('');
-			setSelectedBranch('');
-		} else if (currentStep === 2) {
-			setCurrentStep(1);
-			setSelectedBranch('');
-			setSelectedSector('');
+		if (hasSpecialization) {
+			// User already has a specialization, go to dashboard
+			navigate('/dashboard');
 		} else {
-			navigate('/');
+			// User needs to select a specialization, go to sector selection
+			navigate('/sector-selection');
 		}
 	};
 
-	if (loading && sectors.length === 0) {
-		return (
-			<motion.div
-				className='min-h-screen flex items-center justify-center bg-white'
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				transition={{ duration: 0.5 }}>
-				<div className='text-center'>
-					<motion.div
-						animate={{ rotate: 360 }}
-						transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
-						<Loader2 className='w-12 h-12 text-[#3A7AFE] mx-auto mb-4' />
-					</motion.div>
-					<p className='text-[#4B5563]'>Loading sectors...</p>
-				</div>
-			</motion.div>
-		);
-	}
+	const handleSkipToDashboard = () => {
+		navigate('/dashboard');
+	};
+
+	const currentYear = new Date().getFullYear();
 
 	return (
 		<motion.div
@@ -286,317 +74,465 @@ export default function OnboardingPage(): JSX.Element {
 			initial='hidden'
 			animate='visible'
 			variants={containerVariants}>
-			<div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
-				<motion.div
-					className='bg-white rounded-2xl p-6 md:p-12 shadow-sm border border-[#E5E7EB]'
-					variants={itemVariants}>
-					{/* Header */}
+			{/* Navigation */}
+			<motion.nav
+				className='bg-white border-b border-gray-200 sticky top-0 z-50'
+				initial={{ y: -20, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				transition={{ duration: 0.6, ease: 'easeOut' }}>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+					<div className='flex justify-between items-center h-16 md:h-20'>
+						<motion.div
+							className='flex items-center space-x-3'
+							whileHover={{ scale: 1.02 }}
+							transition={{ duration: 0.2 }}>
+							<div className='w-10 h-10 bg-[#3A7AFE] rounded-lg flex items-center justify-center'>
+								<Zap className='w-6 h-6 text-white' />
+							</div>
+							<span className='text-xl md:text-2xl font-bold text-[#1D2433]'>
+								FutureReady
+							</span>
+						</motion.div>
+
+						<button
+							onClick={handleSkipToDashboard}
+							className='text-[#4B5563] hover:text-[#3A7AFE] font-medium px-3 md:px-4 py-2 transition-colors duration-200'>
+							Skip to Dashboard
+						</button>
+					</div>
+				</div>
+			</motion.nav>
+
+			{/* Hero Section */}
+			<section className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24'>
+				<div className='grid lg:grid-cols-2 gap-12 lg:gap-16 items-center'>
+					{/* Left Column - Content */}
 					<motion.div
-						className='text-center mb-8 md:mb-12'
-						variants={itemVariants}>
-						<h1 className='text-3xl md:text-4xl lg:text-5xl font-bold text-[#1C1C1C] mb-4'>
-							Welcome to Your Journey
-						</h1>
-						<p className='text-base md:text-lg text-[#4B5563]'>
-							{currentStep === 1
-								? "Let's start by selecting your industry sector"
-								: currentStep === 2
-								? 'Now choose a branch within this sector'
-								: 'Finally, select your specialization'}
+						className='space-y-6 md:space-y-8'
+						variants={containerVariants}
+						initial='hidden'
+						animate='visible'>
+						<motion.h1
+							className='text-4xl md:text-5xl lg:text-6xl font-bold text-[#1C1C1C] leading-tight'
+							variants={itemVariants}>
+							Welcome to <span className='text-[#3A7AFE]'>FutureReady</span>
+							{currentUser?.name && (
+								<span className='block text-3xl md:text-4xl lg:text-5xl mt-2'>
+									{currentUser.name.split(' ')[0]}!
+								</span>
+							)}
+						</motion.h1>
+
+						<motion.p
+							className='text-lg md:text-xl text-[#4B5563] leading-relaxed max-w-xl'
+							variants={itemVariants}>
+							You're about to embark on a journey to assess and improve your
+							readiness for the future of work. Let's get you set up and show
+							you how everything works.
+						</motion.p>
+
+						<motion.div
+							className='flex flex-col sm:flex-row gap-4 pt-4'
+							variants={itemVariants}>
+							<button
+								onClick={handleGetStarted}
+								className='group bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white px-8 md:px-10 py-4 md:py-5 rounded-lg font-semibold text-base md:text-lg shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-center space-x-2'>
+								<span>Get Started</span>
+								<ArrowRight className='w-5 h-5 group-hover:translate-x-1 transition-transform duration-200' />
+							</button>
+							<button
+								onClick={handleSkipToDashboard}
+								className='text-[#3A7AFE] hover:text-[#2E6AE8] font-semibold px-8 md:px-10 py-4 md:py-5 transition-colors duration-200'>
+								Skip to Dashboard
+							</button>
+						</motion.div>
+					</motion.div>
+
+					{/* Right Column - Visual */}
+					<motion.div
+						className='relative hidden lg:block'
+						variants={itemVariants}
+						initial='hidden'
+						animate='visible'>
+						<div className='relative bg-[#F7F9FC] rounded-2xl p-8 md:p-12 border border-gray-100'>
+							<div className='space-y-6'>
+								<div className='flex items-start space-x-4 p-6 bg-white rounded-xl border border-gray-100 shadow-sm'>
+									<div className='w-12 h-12 rounded-lg bg-[#3A7AFE]/10 flex items-center justify-center flex-shrink-0'>
+										<Rocket className='w-6 h-6 text-[#3A7AFE]' />
+									</div>
+									<div>
+										<h4 className='font-semibold text-[#1C1C1C] mb-1'>
+											Start Your Journey
+										</h4>
+										<p className='text-sm text-[#4B5563]'>
+											Personalize your experience and unlock your potential
+										</p>
+									</div>
+								</div>
+
+								<div className='flex items-start space-x-4 p-6 bg-white rounded-xl border border-gray-100 shadow-sm'>
+									<div className='w-12 h-12 rounded-lg bg-[#4CAF50]/10 flex items-center justify-center flex-shrink-0'>
+										<TrendingUp className='w-6 h-6 text-[#4CAF50]' />
+									</div>
+									<div>
+										<h4 className='font-semibold text-[#1C1C1C] mb-1'>
+											Track Progress
+										</h4>
+										<p className='text-sm text-[#4B5563]'>
+											Monitor your growth and readiness over time
+										</p>
+									</div>
+								</div>
+
+								<div className='flex items-start space-x-4 p-6 bg-white rounded-xl border border-gray-100 shadow-sm'>
+									<div className='w-12 h-12 rounded-lg bg-[#EAB308]/10 flex items-center justify-center flex-shrink-0'>
+										<Award className='w-6 h-6 text-[#EAB308]' />
+									</div>
+									<div>
+										<h4 className='font-semibold text-[#1C1C1C] mb-1'>
+											Earn Recognition
+										</h4>
+										<p className='text-sm text-[#4B5563]'>
+											Get badges and credentials for your achievements
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</motion.div>
+				</div>
+			</section>
+
+			{/* How the App Works Section */}
+			<section className='bg-[#F7F9FC] py-16 md:py-24'>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+					<motion.div
+						className='text-center mb-12 md:mb-16'
+						variants={itemVariants}
+						initial='hidden'
+						whileInView='visible'
+						viewport={{ once: true }}>
+						<h2 className='text-3xl md:text-4xl font-bold text-[#1C1C1C] mb-4'>
+							How FutureReady Works
+						</h2>
+						<p className='text-base md:text-lg text-[#4B5563] max-w-2xl mx-auto'>
+							Our platform helps you assess, improve, and demonstrate your
+							readiness for tomorrow's workforce through comprehensive testing
+							and personalized insights.
 						</p>
 					</motion.div>
 
-					{/* Progress Indicator */}
+					<div className='grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8'>
+						{[
+							{
+								icon: FileText,
+								title: 'Take Knowledge Tests',
+								description:
+									'Complete industry-specific assessments that evaluate your technical knowledge and understanding of key concepts in your field.',
+								color: 'bg-[#3A7AFE]/10',
+								iconColor: 'text-[#3A7AFE]'
+							},
+							{
+								icon: Brain,
+								title: 'Try Real-World Simulations',
+								description:
+									'Engage with practical scenarios and simulations that test your ability to apply knowledge in real-world situations.',
+								color: 'bg-[#4CAF50]/10',
+								iconColor: 'text-[#4CAF50]'
+							},
+							{
+								icon: BarChart3,
+								title: 'Track Your Readiness Score',
+								description:
+									'Monitor your Future of Work Readiness Score across technical skills, soft skills, and leadership capabilities.',
+								color: 'bg-[#3A7AFE]/10',
+								iconColor: 'text-[#3A7AFE]'
+							},
+							{
+								icon: Target,
+								title: 'Set Goals & Improve',
+								description:
+									'Define learning objectives, track your progress, and receive personalized recommendations to enhance your skills.',
+								color: 'bg-[#4CAF50]/10',
+								iconColor: 'text-[#4CAF50]'
+							},
+							{
+								icon: TrendingUp,
+								title: 'Compare with Peers',
+								description:
+									'Benchmark your performance against others in your specialization and understand where you stand in the market.',
+								color: 'bg-[#3A7AFE]/10',
+								iconColor: 'text-[#3A7AFE]'
+							},
+							{
+								icon: Award,
+								title: 'Earn Badges & Microcredentials',
+								description:
+									'Collect digital badges and microcredentials that validate your skills and can be shared with employers.',
+								color: 'bg-[#EAB308]/10',
+								iconColor: 'text-[#EAB308]'
+							}
+						].map((feature, index) => (
+							<motion.div
+								key={feature.title}
+								className='bg-white rounded-xl p-6 md:p-8 border border-gray-100 shadow-sm'
+								variants={itemVariants}
+								initial='hidden'
+								whileInView='visible'
+								viewport={{ once: true }}
+								transition={{ delay: index * 0.1 }}
+								whileHover={{ y: -4, scale: 1.02 }}>
+								<div
+									className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center mb-4`}>
+									<feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
+								</div>
+								<h3 className='text-xl font-semibold text-[#1C1C1C] mb-2'>
+									{feature.title}
+								</h3>
+								<p className='text-[#4B5563] leading-relaxed'>
+									{feature.description}
+								</p>
+							</motion.div>
+						))}
+					</div>
+				</div>
+			</section>
+
+			{/* Your Journey Section */}
+			<section className='py-16 md:py-24 bg-white'>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 					<motion.div
-						className='flex items-center justify-center mb-8 md:mb-12'
-						variants={itemVariants}>
-						<motion.div
-							className={`w-8 h-8 md:w-10 md:h-10 rounded-full text-white flex items-center justify-center font-bold text-sm md:text-base transition-colors duration-300 ${
-								currentStep >= 1 ? 'bg-[#3A7AFE]' : 'bg-[#d1d5db]'
-							}`}
-							whileHover={{ scale: 1.1 }}
-							transition={{ duration: 0.2 }}>
-							{currentStep > 1 ? <CheckCircle2 className='w-5 h-5' /> : '1'}
-						</motion.div>
-						<motion.div
-							className={`h-0.5 w-12 md:w-16 mx-2 md:mx-4 transition-colors duration-300 ${
-								currentStep >= 2 ? 'bg-[#3A7AFE]' : 'bg-[#d1d5db]'
-							}`}
-							initial={{ scaleX: 0 }}
-							animate={{ scaleX: currentStep >= 2 ? 1 : 0.3 }}
-							transition={{ duration: 0.4, ease: 'easeOut' }}
-						/>
-						<motion.div
-							className={`w-8 h-8 md:w-10 md:h-10 rounded-full text-white flex items-center justify-center font-bold text-sm md:text-base transition-colors duration-300 ${
-								currentStep >= 2 ? 'bg-[#3A7AFE]' : 'bg-[#d1d5db]'
-							}`}
-							whileHover={{ scale: 1.1 }}
-							transition={{ duration: 0.2 }}>
-							{currentStep > 2 ? <CheckCircle2 className='w-5 h-5' /> : '2'}
-						</motion.div>
-						<motion.div
-							className={`h-0.5 w-12 md:w-16 mx-2 md:mx-4 transition-colors duration-300 ${
-								currentStep >= 3 ? 'bg-[#3A7AFE]' : 'bg-[#d1d5db]'
-							}`}
-							initial={{ scaleX: 0 }}
-							animate={{ scaleX: currentStep >= 3 ? 1 : 0.3 }}
-							transition={{ duration: 0.4, ease: 'easeOut' }}
-						/>
-						<motion.div
-							className={`w-8 h-8 md:w-10 md:h-10 rounded-full text-white flex items-center justify-center font-bold text-sm md:text-base transition-colors duration-300 ${
-								currentStep >= 3 ? 'bg-[#3A7AFE]' : 'bg-[#d1d5db]'
-							}`}
-							whileHover={{ scale: 1.1 }}
-							transition={{ duration: 0.2 }}>
-							{currentStep > 3 ? <CheckCircle2 className='w-5 h-5' /> : '3'}
-						</motion.div>
+						className='text-center mb-12 md:mb-16'
+						variants={itemVariants}
+						initial='hidden'
+						whileInView='visible'
+						viewport={{ once: true }}>
+						<h2 className='text-3xl md:text-4xl font-bold text-[#1C1C1C] mb-4'>
+							Your Journey
+						</h2>
+						<p className='text-base md:text-lg text-[#4B5563] max-w-2xl mx-auto'>
+							Here's what to expect as you progress through FutureReady
+						</p>
 					</motion.div>
 
-					{/* Error Message */}
-					{error && (
-						<motion.div
-							className='bg-[#fef2f2] border border-[#fee2e2] text-[#DC2626] p-4 rounded-lg mb-6 md:mb-8 flex items-center space-x-2'
-							initial={{ opacity: 0, x: -10 }}
-							animate={{ opacity: 1, x: 0 }}
-							exit={{ opacity: 0, x: -10 }}>
-							<AlertCircle className='w-5 h-5 flex-shrink-0' />
-							<p className='text-sm'>{error}</p>
-						</motion.div>
-					)}
+					<div className='max-w-4xl mx-auto'>
+						{[
+							{
+								step: 1,
+								title: 'Choose Your Industry',
+								description:
+									'Select your industry sector, branch, and specialization to personalize your experience and receive relevant assessments.',
+								icon: Target
+							},
+							{
+								step: 2,
+								title: 'Take Tests',
+								description:
+									'Complete knowledge tests and simulations tailored to your specialization. Each test helps build your readiness profile.',
+								icon: FileText
+							},
+							{
+								step: 3,
+								title: 'Get Feedback',
+								description:
+									'Receive detailed feedback on your performance, including strengths, areas for improvement, and personalized recommendations.',
+								icon: BarChart3
+							},
+							{
+								step: 4,
+								title: 'Improve Skills',
+								description:
+									'Use insights from your results to set goals, track progress, and focus on developing the skills that matter most.',
+								icon: TrendingUp
+							},
+							{
+								step: 5,
+								title: 'Earn Badges',
+								description:
+									'Unlock badges and microcredentials as you achieve milestones and demonstrate mastery in key areas.',
+								icon: Award
+							}
+						].map((journeyStep, index) => (
+							<motion.div
+								key={journeyStep.step}
+								className='flex flex-col md:flex-row gap-6 mb-8 md:mb-12 last:mb-0'
+								variants={itemVariants}
+								initial='hidden'
+								whileInView='visible'
+								viewport={{ once: true }}
+								transition={{ delay: index * 0.1 }}>
+								{/* Step Number */}
+								<div className='flex-shrink-0'>
+									<div className='w-16 h-16 md:w-20 md:h-20 rounded-full bg-[#3A7AFE] text-white flex items-center justify-center font-bold text-xl md:text-2xl'>
+										{journeyStep.step}
+									</div>
+								</div>
 
-					{/* Step 1: Sector Selection */}
-					{currentStep === 1 && (
-						<motion.div
-							key='step1'
-							initial={{ opacity: 0, x: -20 }}
-							animate={{ opacity: 1, x: 0 }}
-							exit={{ opacity: 0, x: 20 }}
-							transition={{ duration: 0.4, ease: 'easeOut' }}>
-							<h2 className='text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-[#1C1C1C]'>
-								Choose Your Industry Sector
-							</h2>
-							{loading ? (
-								<div className='text-center py-8'>
-									<motion.div
-										animate={{ rotate: 360 }}
-										transition={{
-											duration: 1,
-											repeat: Infinity,
-											ease: 'linear'
-										}}>
-										<Loader2 className='w-8 h-8 text-[#3A7AFE] mx-auto mb-4' />
-									</motion.div>
-									<p className='text-[#4B5563]'>Loading sectors...</p>
+								{/* Content */}
+								<div className='flex-1 bg-[#F7F9FC] rounded-xl p-6 md:p-8 border border-gray-100'>
+									<div className='flex items-start space-x-4 mb-4'>
+										<div className='w-10 h-10 rounded-lg bg-[#3A7AFE]/10 flex items-center justify-center flex-shrink-0'>
+											<journeyStep.icon className='w-5 h-5 text-[#3A7AFE]' />
+										</div>
+										<div>
+											<h3 className='text-xl md:text-2xl font-semibold text-[#1C1C1C] mb-2'>
+												{journeyStep.title}
+											</h3>
+											<p className='text-[#4B5563] leading-relaxed'>
+												{journeyStep.description}
+											</p>
+										</div>
+									</div>
 								</div>
-							) : sectors.length === 0 ? (
-								<div className='bg-[#fffbeb] border border-[#fef3c7] text-[#d97706] p-4 rounded-lg mb-8 text-center flex items-center justify-center space-x-2'>
-									<AlertCircle className='w-5 h-5' />
-									<p>No sectors available. Please check the database.</p>
-								</div>
-							) : (
-								<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
-									{sectors.map((sector, index) => {
-										const IconComponent =
-											sectorIcons[sector.name as string] || Building2;
-										return (
-											<motion.button
-												key={sector.id}
-												onClick={() => handleSectorSelect(sector.id)}
-												className='p-6 md:p-8 border-2 border-[#E5E7EB] rounded-xl bg-white cursor-pointer text-center transition-all duration-200 hover:border-[#3A7AFE] hover:bg-[#3A7AFE]/10'
-												variants={itemVariants}
-												initial='hidden'
-												animate='visible'
-												transition={{ delay: index * 0.05 }}
-												whileHover={{ y: -4, scale: 1.02 }}
-												whileTap={{ scale: 0.98 }}>
-												<div className='w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 bg-[#3A7AFE]/10 rounded-xl flex items-center justify-center'>
-													<IconComponent className='w-6 h-6 md:w-8 md:h-8 text-[#3A7AFE]' />
-												</div>
-												<div className='font-semibold text-[#1C1C1C] text-base md:text-lg mb-2'>
-													{sector.name}
-												</div>
-												<div className='text-sm text-[#4B5563]'>
-													{sector.description}
-												</div>
-											</motion.button>
-										);
-									})}
-								</div>
-							)}
-						</motion.div>
-					)}
+							</motion.div>
+						))}
+					</div>
+				</div>
+			</section>
 
-					{/* Step 2: Branch Selection */}
-					{currentStep === 2 && (
-						<motion.div
-							key='step2'
-							initial={{ opacity: 0, x: -20 }}
-							animate={{ opacity: 1, x: 0 }}
-							exit={{ opacity: 0, x: 20 }}
-							transition={{ duration: 0.4, ease: 'easeOut' }}>
-							<h2 className='text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-[#1C1C1C]'>
-								Choose Your Branch
-							</h2>
-							{loading ? (
-								<div className='text-center py-8 text-[#4B5563]'>
-									<motion.div
-										animate={{ rotate: 360 }}
-										transition={{
-											duration: 1,
-											repeat: Infinity,
-											ease: 'linear'
-										}}>
-										<Loader2 className='w-8 h-8 text-[#3A7AFE] mx-auto mb-4' />
-									</motion.div>
-									<p>Loading branches...</p>
-								</div>
-							) : (
-								<div className='grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6'>
-									{branches.map((branch, index) => (
-										<motion.button
-											key={branch.id}
-											onClick={() => handleBranchSelect(branch.id)}
-											className='p-6 border-2 border-[#E5E7EB] rounded-xl bg-white cursor-pointer text-left transition-all duration-200 hover:border-[#3A7AFE] hover:bg-[#3A7AFE]/10'
-											variants={itemVariants}
-											initial='hidden'
-											animate='visible'
-											transition={{ delay: index * 0.05 }}
-											whileHover={{ y: -4, scale: 1.02 }}
-											whileTap={{ scale: 0.98 }}>
-											<div className='font-semibold text-[#1C1C1C] mb-2 text-base md:text-lg'>
-												{branch.name}
-											</div>
-											<div className='text-sm text-[#4B5563]'>
-												{branch.description}
-											</div>
-										</motion.button>
-									))}
-								</div>
-							)}
-						</motion.div>
-					)}
-
-					{/* Step 3: Specialization Selection */}
-					{currentStep === 3 && (
-						<motion.div
-							key='step3'
-							initial={{ opacity: 0, x: -20 }}
-							animate={{ opacity: 1, x: 0 }}
-							exit={{ opacity: 0, x: 20 }}
-							transition={{ duration: 0.4, ease: 'easeOut' }}>
-							<h2 className='text-xl md:text-2xl font-semibold mb-6 md:mb-8 text-[#1C1C1C]'>
-								Choose Your Specialization
-							</h2>
-							{loading ? (
-								<div className='text-center py-8 text-[#4B5563]'>
-									<motion.div
-										animate={{ rotate: 360 }}
-										transition={{
-											duration: 1,
-											repeat: Infinity,
-											ease: 'linear'
-										}}>
-										<Loader2 className='w-8 h-8 text-[#3A7AFE] mx-auto mb-4' />
-									</motion.div>
-									<p>Loading specializations...</p>
-								</div>
-							) : (
-								<div className='mb-6 md:mb-8 space-y-3'>
-									{specializations.map((spec, index) => (
-										<motion.label
-											key={spec.id}
-											className={`block p-4 md:p-6 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
-												selectedSpecialization === String(spec.id)
-													? 'border-[#3A7AFE] bg-[#3A7AFE]/10'
-													: 'border-[#E5E7EB] bg-white hover:border-[#3A7AFE]/50'
-											}`}
-											variants={itemVariants}
-											initial='hidden'
-											animate='visible'
-											transition={{ delay: index * 0.05 }}
-											whileHover={{ scale: 1.01 }}
-											whileTap={{ scale: 0.99 }}>
-											<div className='flex items-start space-x-3'>
-												<input
-													type='radio'
-													name='specialization'
-													value={spec.id}
-													checked={selectedSpecialization === String(spec.id)}
-													onChange={(e) =>
-														handleSpecializationSelect(e.target.value)
-													}
-													className='mt-1 w-4 h-4 text-[#3A7AFE] focus:ring-[#3A7AFE]'
-												/>
-												<div className='flex-1'>
-													<span className='font-semibold text-[#1C1C1C] text-base md:text-lg block mb-1'>
-														{spec.name}
-													</span>
-													<div className='text-sm text-[#4B5563]'>
-														{spec.description}
-													</div>
-												</div>
-											</div>
-										</motion.label>
-									))}
-								</div>
-							)}
-						</motion.div>
-					)}
-
-					{/* Navigation Buttons */}
+			{/* What's Next Section */}
+			<section className='bg-[#3A7AFE] py-16 md:py-24'>
+				<div className='max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
 					<motion.div
-						className='flex flex-col sm:flex-row justify-between gap-4 mt-8 md:mt-12'
-						variants={itemVariants}>
-						<button
-							onClick={handleBack}
-							className='px-6 py-3 border border-[#d1d5db] rounded-lg bg-white text-[#374151] cursor-pointer flex items-center justify-center gap-2 transition-colors duration-200 hover:bg-[#F7F9FC]'>
-							<ArrowLeft className='w-5 h-5' />
-							<span>Back</span>
-						</button>
-
-						{currentStep === 3 && (
+						variants={itemVariants}
+						initial='hidden'
+						whileInView='visible'
+						viewport={{ once: true }}>
+						<h2 className='text-3xl md:text-4xl font-bold text-white mb-4'>
+							Ready to Get Started?
+						</h2>
+						<p className='text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto'>
+							From your dashboard, you'll be able to access all tests, view your
+							readiness scores, set goals, compare with peers, and track your
+							progress over time.
+						</p>
+						<div className='flex flex-col sm:flex-row gap-4 justify-center'>
 							<button
-								onClick={handleComplete}
-								disabled={!selectedSpecialization || loading}
-								className={`px-6 py-3 border-none rounded-lg text-white flex items-center justify-center gap-2 transition-colors duration-200 w-full sm:w-auto ${
-									selectedSpecialization && !loading
-										? 'bg-[#3A7AFE] hover:bg-[#2E6AE8] cursor-pointer'
-										: 'bg-[#9ca3af] cursor-not-allowed'
-								}`}>
-								{loading ? (
-									<>
-										<Loader2 className='w-5 h-5 animate-spin' />
-										<span>Saving...</span>
-									</>
-								) : (
-									<>
-										<span>Complete</span>
-										<ArrowRight className='w-5 h-5' />
-									</>
-								)}
+								onClick={handleGetStarted}
+								className='group bg-white text-[#3A7AFE] px-8 md:px-10 py-4 md:py-5 rounded-lg font-semibold text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2'>
+								<span>
+									{currentUser?.specializationId
+										? 'Go to Dashboard'
+										: 'Start Personalizing'}
+								</span>
+								<ArrowRight className='w-5 h-5 group-hover:translate-x-1 transition-transform duration-200' />
 							</button>
-						)}
-						{currentStep === 2 && (
 							<button
-								onClick={() => {
-									const firstBranchId = branches[0]?.id;
-									if (firstBranchId !== undefined) {
-										handleBranchSelect(firstBranchId);
-									}
-								}}
-								disabled={branches.length === 0}
-								className={`px-6 py-3 border-none rounded-lg text-white flex items-center justify-center gap-2 transition-colors duration-200 w-full sm:w-auto ${
-									branches.length > 0
-										? 'bg-[#3A7AFE] hover:bg-[#2E6AE8] cursor-pointer'
-										: 'bg-[#9ca3af] cursor-not-allowed'
-								}`}>
-								<span>Next</span>
-								<ArrowRight className='w-5 h-5' />
+								onClick={handleSkipToDashboard}
+								className='bg-white/10 hover:bg-white/20 text-white border-2 border-white/30 px-8 md:px-10 py-4 md:py-5 rounded-lg font-semibold text-base md:text-lg transition-all duration-200'>
+								Skip to Dashboard
 							</button>
-						)}
+						</div>
 					</motion.div>
-				</motion.div>
-			</div>
+				</div>
+			</section>
+
+			{/* Footer */}
+			<footer className='bg-white border-t border-gray-200 py-10 md:py-12'>
+				<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+					<div className='grid md:grid-cols-4 gap-8 md:gap-12'>
+						{/* Brand */}
+						<div className='md:col-span-1'>
+							<div className='flex items-center space-x-3 mb-4'>
+								<div className='w-10 h-10 bg-[#3A7AFE] rounded-lg flex items-center justify-center'>
+									<Zap className='w-6 h-6 text-white' />
+								</div>
+								<span className='text-xl font-bold text-[#1D2433]'>
+									FutureReady
+								</span>
+							</div>
+							<p className='text-sm text-[#4B5563]'>
+								Preparing you for the future of work.
+							</p>
+						</div>
+
+						{/* About */}
+						<div>
+							<h4 className='font-semibold text-[#1C1C1C] mb-4'>About</h4>
+							<ul className='space-y-2'>
+								<li>
+									<a
+										href='#'
+										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
+										Our Mission
+									</a>
+								</li>
+								<li>
+									<a
+										href='#'
+										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
+										How It Works
+									</a>
+								</li>
+								<li>
+									<a
+										href='#'
+										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
+										Success Stories
+									</a>
+								</li>
+							</ul>
+						</div>
+
+						{/* Contact */}
+						<div>
+							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Contact</h4>
+							<ul className='space-y-2'>
+								<li>
+									<a
+										href='#'
+										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
+										Support
+									</a>
+								</li>
+								<li>
+									<a
+										href='#'
+										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
+										Help Center
+									</a>
+								</li>
+								<li>
+									<a
+										href='#'
+										className='text-sm text-[#4B5563] hover:text-[#3A7AFE] transition-colors duration-200'>
+										Get in Touch
+									</a>
+								</li>
+							</ul>
+						</div>
+
+						{/* Social */}
+						<div>
+							<h4 className='font-semibold text-[#1C1C1C] mb-4'>Connect</h4>
+							<div className='flex space-x-4'>
+								<a
+									href='#'
+									className='w-10 h-10 rounded-lg bg-[#F7F9FC] hover:bg-[#3A7AFE] hover:text-white flex items-center justify-center transition-colors duration-200 text-[#4B5563]'>
+									<span className='text-sm font-semibold'>f</span>
+								</a>
+								<a
+									href='#'
+									className='w-10 h-10 rounded-lg bg-[#F7F9FC] hover:bg-[#3A7AFE] hover:text-white flex items-center justify-center transition-colors duration-200 text-[#4B5563]'>
+									<span className='text-sm font-semibold'>in</span>
+								</a>
+								<a
+									href='#'
+									className='w-10 h-10 rounded-lg bg-[#F7F9FC] hover:bg-[#3A7AFE] hover:text-white flex items-center justify-center transition-colors duration-200 text-[#4B5563]'>
+									<span className='text-sm font-semibold'>@</span>
+								</a>
+							</div>
+						</div>
+					</div>
+
+					{/* Copyright */}
+					<div className='mt-8 md:mt-12 pt-8 border-t border-gray-200'>
+						<p className='text-sm text-[#4B5563] text-center'>
+							© {currentYear} FutureReady. All rights reserved.
+						</p>
+					</div>
+				</div>
+			</footer>
 		</motion.div>
 	);
 }

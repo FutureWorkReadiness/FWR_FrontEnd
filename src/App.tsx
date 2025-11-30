@@ -6,6 +6,7 @@ import { toastOptions } from './lib/toastConfig';
 import AuthPage from '../pages/AuthPage'; // Login/Registration page
 import LandingPageAuth from '../pages/LandingPageAuth'; // Landing page after login
 import OnboardingPage from '../pages/OnboardingPage';
+import SectorSelectionPage from '../pages/SectorSelectionPage';
 import DashboardPage from '../pages/DashboardPage';
 
 // Import additional pages
@@ -53,6 +54,14 @@ function App(): JSX.Element {
 					element={
 						<ProtectedRoute>
 							<OnboardingPage />
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path='/sector-selection'
+					element={
+						<ProtectedRoute>
+							<SectorSelectionPage />
 						</ProtectedRoute>
 					}
 				/>
