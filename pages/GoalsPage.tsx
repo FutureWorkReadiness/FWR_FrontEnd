@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import {
 	Target,
 	Plus,
@@ -7,11 +8,14 @@ import {
 	Trash2,
 	BookOpen,
 	TrendingUp,
-	CheckCircle
+	CheckCircle,
+	ArrowLeft
 } from 'lucide-react';
 import { buttonStyles } from '../utils/designSystem';
 import { API_BASE_URL } from '../utils/api';
 import type { User } from '../src/types';
+import Navbar from '../src/components/Navbar';
+import Footer from '../src/components/Footer';
 
 interface Goal {
 	id: number | string;
@@ -306,12 +310,36 @@ export default function GoalsPage(): JSX.Element {
 		setShowGoalForm(true);
 	};
 
+	// Animation variants - gentle and not too fast
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.12,
+				delayChildren: 0.2
+			}
+		}
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 20 },
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: {
+				duration: 0.6,
+				ease: 'easeOut' as const
+			}
+		}
+	};
+
 	if (loading) {
 		return (
-			<div className='min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center'>
+			<div className='min-h-screen bg-[#F7F9FC] flex items-center justify-center'>
 				<div className='text-center'>
-					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4'></div>
-					<p className='text-gray-600'>Loading...</p>
+					<div className='animate-spin rounded-full h-12 w-12 border-b-2 border-[#3A7AFE] mx-auto mb-4'></div>
+					<p className='text-[#4B5563]'>Loading...</p>
 				</div>
 			</div>
 		);
@@ -350,10 +378,20 @@ export default function GoalsPage(): JSX.Element {
 	];
 
 	return (
-		<div className='min-h-screen bg-[#F7F9FC]'>
-			<div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12'>
+		<div className='min-h-screen bg-[#F7F9FC] flex flex-col'>
+			{/* Navbar */}
+			<Navbar showSkipToDashboard={true} />
+
+			{/* Main Content */}
+			<motion.div
+				className='flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full'
+				initial='hidden'
+				animate='visible'
+				variants={containerVariants}>
 				{/* Header */}
-				<div className='mb-8 flex items-center justify-between'>
+				<motion.div
+					className='mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'
+					variants={itemVariants}>
 					<div>
 						<h1 className='text-3xl md:text-4xl font-bold text-[#1C1C1C] mb-2'>
 							Self-Reflection & Goals
@@ -362,60 +400,82 @@ export default function GoalsPage(): JSX.Element {
 							Track your progress and reflect on your journey
 						</p>
 					</div>
-					<button
-						onClick={() => navigate('/dashboard')}
-						className='px-4 py-2 bg-white hover:bg-[#F7F9FC] text-[#4B5563] border border-[#E5E7EB] rounded-lg transition-colors duration-200'>
-						Back to Dashboard
-					</button>
-				</div>
+					<div className='flex items-center gap-3'>
+						<button
+							onClick={() => navigate(-1)}
+							className='flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F9FC] text-[#4B5563] border border-[#E5E7EB] rounded-lg transition-colors duration-200'>
+							<ArrowLeft className='w-4 h-4' />
+							<span className='hidden sm:inline'>Back</span>
+						</button>
+						<button
+							onClick={() => navigate('/dashboard')}
+							className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg transition-colors duration-200'>
+							Dashboard
+						</button>
+					</div>
+				</motion.div>
+
+				{/* Error Message */}
+				{error && (
+					<motion.div
+						className='mb-6 rounded-lg border border-[#DC2626] bg-[#fef2f2] px-4 py-3 text-sm text-[#DC2626]'
+						variants={itemVariants}
+						initial='hidden'
+						animate='visible'>
+						{error}
+					</motion.div>
+				)}
 
 				{/* Two-Column Layout */}
-				{error && (
-					<div className='mb-6 rounded-lg border border-[#DC2626] bg-[#fef2f2] px-4 py-3 text-sm text-[#DC2626]'>
-						{error}
-					</div>
-				)}
 				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
 					{/* Where I Am Now */}
-					<div className='bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]'>
-						<h2 className='text-2xl font-semibold text-[#1C1C1C] mb-4 flex items-center gap-2'>
-							<Target className='h-6 w-6 text-[#3A7AFE]' />
+					<motion.div
+						className='bg-white rounded-xl shadow-sm p-4 md:p-6 border border-[#E5E7EB]'
+						variants={itemVariants}
+						whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+						<h2 className='text-xl md:text-2xl font-semibold text-[#1C1C1C] mb-4 flex items-center gap-2'>
+							<Target className='h-5 w-5 md:h-6 md:w-6 text-[#3A7AFE]' />
 							Where I Am Now
 						</h2>
-						<div className='space-y-4'>
-							<div className='p-4 bg-[#F7F9FC] rounded-lg border border-[#E5E7EB]'>
-								<div className='text-sm text-[#4B5563] mb-1'>
+						<div className='space-y-3 md:space-y-4'>
+							<div className='p-3 md:p-4 bg-[#F7F9FC] rounded-lg border border-[#E5E7EB]'>
+								<div className='text-xs md:text-sm text-[#4B5563] mb-1'>
 									Overall Readiness
 								</div>
-								<div className='text-3xl font-bold text-[#3A7AFE]'>
+								<div className='text-2xl md:text-3xl font-bold text-[#3A7AFE]'>
 									{Math.round(currentReadiness.overall)}%
 								</div>
 							</div>
-							<div className='p-4 bg-[#f0fdf4] rounded-lg border border-[#dcfce7]'>
-								<div className='text-sm text-[#4B5563] mb-1'>
+							<div className='p-3 md:p-4 bg-[#f0fdf4] rounded-lg border border-[#dcfce7]'>
+								<div className='text-xs md:text-sm text-[#4B5563] mb-1'>
 									Technical Skills
 								</div>
-								<div className='text-3xl font-bold text-[#4CAF50]'>
+								<div className='text-2xl md:text-3xl font-bold text-[#4CAF50]'>
 									{Math.round(currentReadiness.technical)}%
 								</div>
 							</div>
-							<div className='p-4 bg-[#fffbeb] rounded-lg border border-[#fef3c7]'>
-								<div className='text-sm text-[#4B5563] mb-1'>Soft Skills</div>
-								<div className='text-3xl font-bold text-[#EAB308]'>
+							<div className='p-3 md:p-4 bg-[#fffbeb] rounded-lg border border-[#fef3c7]'>
+								<div className='text-xs md:text-sm text-[#4B5563] mb-1'>
+									Soft Skills
+								</div>
+								<div className='text-2xl md:text-3xl font-bold text-[#EAB308]'>
 									{Math.round(currentReadiness.soft)}%
 								</div>
 							</div>
 						</div>
-					</div>
+					</motion.div>
 
 					{/* Where I Want To Be */}
-					<div className='bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]'>
-						<h2 className='text-2xl font-semibold text-[#1C1C1C] mb-4 flex items-center gap-2'>
-							<TrendingUp className='h-6 w-6 text-[#3A7AFE]' />
+					<motion.div
+						className='bg-white rounded-xl shadow-sm p-4 md:p-6 border border-[#E5E7EB]'
+						variants={itemVariants}
+						whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+						<h2 className='text-xl md:text-2xl font-semibold text-[#1C1C1C] mb-4 flex items-center gap-2'>
+							<TrendingUp className='h-5 w-5 md:h-6 md:w-6 text-[#3A7AFE]' />
 							Where I Want To Be
 						</h2>
 						{!showGoalForm ? (
-							<button
+							<motion.button
 								onClick={() => {
 									setEditingGoal(null);
 									setGoalForm({
@@ -427,10 +487,12 @@ export default function GoalsPage(): JSX.Element {
 									});
 									setShowGoalForm(true);
 								}}
-								className='w-full p-4 border-2 border-dashed border-[#E5E7EB] rounded-lg hover:border-[#3A7AFE] transition-colors duration-200 flex items-center justify-center gap-2 text-[#4B5563]'>
+								className='w-full p-4 border-2 border-dashed border-[#E5E7EB] rounded-lg hover:border-[#3A7AFE] transition-colors duration-200 flex items-center justify-center gap-2 text-[#4B5563]'
+								whileHover={{ scale: 1.02 }}
+								whileTap={{ scale: 0.98 }}>
 								<Plus className='h-5 w-5' />
 								Set a New Goal
-							</button>
+							</motion.button>
 						) : (
 							<form
 								onSubmit={editingGoal ? handleUpdateGoal : handleCreateGoal}
@@ -442,7 +504,7 @@ export default function GoalsPage(): JSX.Element {
 									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 										setGoalForm({ ...goalForm, title: e.target.value })
 									}
-									className='w-full p-3 border border-gray-300 rounded-lg'
+									className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'
 									required
 								/>
 								<textarea
@@ -451,7 +513,7 @@ export default function GoalsPage(): JSX.Element {
 									onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
 										setGoalForm({ ...goalForm, description: e.target.value })
 									}
-									className='w-full p-3 border border-gray-300 rounded-lg'
+									className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'
 									rows={2}
 								/>
 								<select
@@ -459,7 +521,7 @@ export default function GoalsPage(): JSX.Element {
 									onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
 										setGoalForm({ ...goalForm, category: e.target.value })
 									}
-									className='w-full p-3 border border-gray-300 rounded-lg'>
+									className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'>
 									<option value='readiness'>Overall Readiness</option>
 									<option value='technical'>Technical Skills</option>
 									<option value='soft_skills'>Soft Skills</option>
@@ -475,7 +537,7 @@ export default function GoalsPage(): JSX.Element {
 											target_value: parseFloat(e.target.value) || 0
 										})
 									}
-									className='w-full p-3 border border-gray-300 rounded-lg'
+									className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'
 									min='0'
 									max='100'
 									step='0.1'
@@ -487,12 +549,12 @@ export default function GoalsPage(): JSX.Element {
 									onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 										setGoalForm({ ...goalForm, target_date: e.target.value })
 									}
-									className='w-full p-3 border border-gray-300 rounded-lg'
+									className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'
 								/>
-								<div className='flex gap-2'>
+								<div className='flex flex-col sm:flex-row gap-2'>
 									<button
 										type='submit'
-										className={`${buttonStyles.primary} flex-1 px-4 py-2`}
+										className={`${buttonStyles.primary} flex-1 px-4 py-2 text-sm md:text-base`}
 										onClick={() => console.log('Create Goal button clicked!')}>
 										{editingGoal ? 'Update Goal' : 'Create Goal'}
 									</button>
@@ -502,19 +564,22 @@ export default function GoalsPage(): JSX.Element {
 											setShowGoalForm(false);
 											setEditingGoal(null);
 										}}
-										className='px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg'>
+										className='px-4 py-2 bg-[#E5E7EB] hover:bg-[#d1d5db] text-[#4B5563] rounded-lg text-sm md:text-base transition-colors duration-200'>
 										Cancel
 									</button>
 								</div>
 							</form>
 						)}
-					</div>
+					</motion.div>
 				</div>
 
 				{/* Goal Tracking Dashboard */}
-				<div className='bg-white rounded-xl shadow-lg p-6 mb-8'>
-					<h2 className='text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2'>
-						<CheckCircle className='h-6 w-6 text-green-600' />
+				<motion.div
+					className='bg-white rounded-xl shadow-sm p-4 md:p-6 mb-6 md:mb-8 border border-[#E5E7EB]'
+					variants={itemVariants}
+					whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+					<h2 className='text-xl md:text-2xl font-bold text-[#1C1C1C] mb-4 flex items-center gap-2'>
+						<CheckCircle className='h-5 w-5 md:h-6 md:w-6 text-[#4CAF50]' />
 						Goal Tracking Dashboard
 					</h2>
 					{goals.length === 0 ? (
@@ -523,66 +588,74 @@ export default function GoalsPage(): JSX.Element {
 						</div>
 					) : (
 						<div className='space-y-4'>
-							{goals.map((goal) => {
+							{goals.map((goal, index) => {
 								const progress = getProgressPercentage(goal);
 								return (
-									<div
+									<motion.div
 										key={goal.id}
-										className='border border-gray-200 rounded-lg p-4'>
-										<div className='flex items-start justify-between mb-2'>
-											<div className='flex-1'>
-												<h3 className='font-semibold text-lg text-gray-900'>
+										className='border border-[#E5E7EB] rounded-lg p-3 md:p-4 bg-white'
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{
+											delay: index * 0.1,
+											duration: 0.4,
+											ease: 'easeOut'
+										}}
+										whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+										<div className='flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2 gap-2'>
+											<div className='flex-1 min-w-0'>
+												<h3 className='font-semibold text-base md:text-lg text-[#1C1C1C]'>
 													{goal.title}
 												</h3>
 												{goal.description && (
-													<p className='text-sm text-gray-600 mt-1'>
+													<p className='text-xs md:text-sm text-[#4B5563] mt-1'>
 														{goal.description}
 													</p>
 												)}
-												<div className='mt-2 flex items-center gap-4 text-sm text-gray-500'>
+												<div className='mt-2 flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-[#4B5563]'>
 													<span className='capitalize'>
 														{goal.category.replace('_', ' ')}
 													</span>
 													<span>Target: {goal.target_value}%</span>
 													{goal.target_date && (
-														<span>
+														<span className='whitespace-nowrap'>
 															By:{' '}
 															{new Date(goal.target_date).toLocaleDateString()}
 														</span>
 													)}
 													{goal.is_completed && (
-														<span className='text-green-600 font-semibold'>
+														<span className='text-[#4CAF50] font-semibold'>
 															✓ Completed
 														</span>
 													)}
 												</div>
 											</div>
-											<div className='flex gap-2'>
+											<div className='flex gap-2 flex-shrink-0'>
 												<button
 													onClick={() => startEditGoal(goal)}
-													className='p-2 text-blue-600 hover:bg-blue-50 rounded'>
+													className='p-2 text-[#3A7AFE] hover:bg-[#3A7AFE]/10 rounded transition-colors duration-200'>
 													<Edit2 className='h-4 w-4' />
 												</button>
 												<button
 													onClick={() => handleDeleteGoal(goal.id)}
-													className='p-2 text-red-600 hover:bg-red-50 rounded'>
+													className='p-2 text-[#DC2626] hover:bg-[#fef2f2] rounded transition-colors duration-200'>
 													<Trash2 className='h-4 w-4' />
 												</button>
 											</div>
 										</div>
 										<div className='mt-3'>
-											<div className='flex items-center justify-between mb-1'>
-												<span className='text-sm text-gray-600'>
+											<div className='flex items-center justify-between mb-1 gap-2'>
+												<span className='text-xs md:text-sm text-[#4B5563]'>
 													Progress: {goal.current_value.toFixed(1)}% /{' '}
 													{goal.target_value}%
 												</span>
-												<span className='text-sm font-semibold text-gray-900'>
+												<span className='text-xs md:text-sm font-semibold text-[#1C1C1C]'>
 													{progress}%
 												</span>
 											</div>
-											<div className='w-full bg-[#E5E7EB] rounded-full h-3'>
+											<div className='w-full bg-[#E5E7EB] rounded-full h-2 md:h-3'>
 												<div
-													className={`h-3 rounded-full transition-all ${
+													className={`h-2 md:h-3 rounded-full transition-all ${
 														goal.is_completed ? 'bg-[#4CAF50]' : 'bg-[#3A7AFE]'
 													}`}
 													style={{ width: `${progress}%` }}
@@ -596,7 +669,7 @@ export default function GoalsPage(): JSX.Element {
 														min='0'
 														max={goal.target_value}
 														step='0.1'
-														className='w-32 p-1 border border-gray-300 rounded text-sm'
+														className='w-full sm:w-32 p-2 border border-[#E5E7EB] rounded text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'
 														onKeyPress={(
 															e: React.KeyboardEvent<HTMLInputElement>
 														) => {
@@ -612,30 +685,35 @@ export default function GoalsPage(): JSX.Element {
 												</div>
 											)}
 										</div>
-									</div>
+									</motion.div>
 								);
 							})}
 						</div>
 					)}
-				</div>
+				</motion.div>
 
 				{/* Self-Reflection Journal */}
-				<div className='bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]'>
-					<div className='flex items-center justify-between mb-4'>
-						<h2 className='text-2xl font-semibold text-[#1C1C1C] flex items-center gap-2'>
-							<BookOpen className='h-6 w-6 text-[#3A7AFE]' />
+				<motion.div
+					className='bg-white rounded-xl shadow-sm p-4 md:p-6 border border-[#E5E7EB]'
+					variants={itemVariants}
+					whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+					<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3'>
+						<h2 className='text-xl md:text-2xl font-semibold text-[#1C1C1C] flex items-center gap-2'>
+							<BookOpen className='h-5 w-5 md:h-6 md:w-6 text-[#3A7AFE]' />
 							Self-Reflection Journal
 						</h2>
 						{!showJournalForm && (
-							<button
+							<motion.button
 								onClick={() => {
 									setJournalForm({ prompt: '', content: '' });
 									setShowJournalForm(true);
 								}}
-								className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg flex items-center gap-2 transition-colors duration-200'>
+								className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg flex items-center justify-center gap-2 transition-colors duration-200 text-sm md:text-base w-full sm:w-auto'
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}>
 								<Plus className='h-4 w-4' />
 								New Entry
-							</button>
+							</motion.button>
 						)}
 					</div>
 
@@ -648,7 +726,7 @@ export default function GoalsPage(): JSX.Element {
 								onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
 									setJournalForm({ ...journalForm, prompt: e.target.value })
 								}
-								className='w-full p-3 border border-gray-300 rounded-lg'>
+								className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'>
 								<option value=''>Select a prompt (optional)</option>
 								{journalPrompts.map((prompt, idx) => (
 									<option key={idx} value={prompt}>
@@ -662,14 +740,14 @@ export default function GoalsPage(): JSX.Element {
 								onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
 									setJournalForm({ ...journalForm, content: e.target.value })
 								}
-								className='w-full p-3 border border-gray-300 rounded-lg'
+								className='w-full p-2 md:p-3 border border-[#E5E7EB] rounded-lg text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-[#3A7AFE] focus:border-transparent'
 								rows={6}
 								required
 							/>
-							<div className='flex gap-2'>
+							<div className='flex flex-col sm:flex-row gap-2'>
 								<button
 									type='submit'
-									className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg transition-colors duration-200'>
+									className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg transition-colors duration-200 text-sm md:text-base flex-1'>
 									Save Entry
 								</button>
 								<button
@@ -678,7 +756,7 @@ export default function GoalsPage(): JSX.Element {
 										setShowJournalForm(false);
 										setJournalForm({ prompt: '', content: '' });
 									}}
-									className='px-4 py-2 bg-white hover:bg-[#F7F9FC] text-[#4B5563] border border-[#E5E7EB] rounded-lg transition-colors duration-200'>
+									className='px-4 py-2 bg-white hover:bg-[#F7F9FC] text-[#4B5563] border border-[#E5E7EB] rounded-lg transition-colors duration-200 text-sm md:text-base'>
 									Cancel
 								</button>
 							</div>
@@ -691,34 +769,45 @@ export default function GoalsPage(): JSX.Element {
 						</div>
 					) : (
 						<div className='space-y-4'>
-							{journalEntries.map((entry) => (
-								<div
+							{journalEntries.map((entry, index) => (
+								<motion.div
 									key={entry.id}
-									className='border border-gray-200 rounded-lg p-4'>
+									className='border border-[#E5E7EB] rounded-lg p-3 md:p-4 bg-white'
+									initial={{ opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={{
+										delay: index * 0.1,
+										duration: 0.4,
+										ease: 'easeOut'
+									}}
+									whileHover={{ y: -2, transition: { duration: 0.2 } }}>
 									{entry.prompt && (
-										<div className='text-sm font-semibold text-[#3A7AFE] mb-2'>
+										<div className='text-xs md:text-sm font-semibold text-[#3A7AFE] mb-2'>
 											{entry.prompt}
 										</div>
 									)}
-									<p className='text-[#4B5563] whitespace-pre-wrap'>
+									<p className='text-xs md:text-sm text-[#4B5563] whitespace-pre-wrap break-words'>
 										{entry.content}
 									</p>
-									<div className='mt-3 flex items-center justify-between'>
+									<div className='mt-3 flex items-center justify-between gap-2'>
 										<span className='text-xs text-[#6b7280]'>
 											{new Date(entry.entry_date).toLocaleDateString()}
 										</span>
 										<button
 											onClick={() => handleDeleteJournal(entry.id)}
-											className='text-xs text-[#DC2626] hover:text-[#b91c1c] transition-colors duration-200'>
+											className='text-xs text-[#DC2626] hover:text-[#b91c1c] transition-colors duration-200 px-2 py-1 hover:bg-[#fef2f2] rounded'>
 											Delete
 										</button>
 									</div>
-								</div>
+								</motion.div>
 							))}
 						</div>
 					)}
-				</div>
-			</div>
+				</motion.div>
+			</motion.div>
+
+			{/* Footer */}
+			<Footer />
 		</div>
 	);
 }
