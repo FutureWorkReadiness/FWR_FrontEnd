@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import {
 	ArrowLeft,
 	TrendingUp,
@@ -14,6 +15,8 @@ import {
 } from 'lucide-react';
 import type { PeerBenchmarkData } from '../src/types';
 import { API_BASE_URL } from '../utils/api';
+import Navbar from '../src/components/Navbar';
+import Footer from '../src/components/Footer';
 
 export default function PeerBenchmarkingPage(): JSX.Element {
 	const [benchmarkData, setBenchmarkData] = useState<PeerBenchmarkData | null>(
@@ -81,6 +84,30 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 		return 'At average level';
 	};
 
+	// Animation variants - gentle and not too fast
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		visible: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.12,
+				delayChildren: 0.2
+			}
+		}
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 20 },
+		visible: {
+			opacity: 1,
+			y: 0,
+			transition: {
+				duration: 0.6,
+				ease: 'easeOut' as const
+			}
+		}
+	};
+
 	if (loading) {
 		return (
 			<div className='min-h-screen bg-[#F7F9FC] flex items-center justify-center'>
@@ -94,88 +121,128 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 
 	if (error) {
 		return (
-			<div className='min-h-screen bg-[#F7F9FC] p-4'>
-				<div className='max-w-4xl mx-auto'>
-					<button
-						onClick={() => navigate('/dashboard')}
-						className='flex items-center text-[#4B5563] hover:text-[#3A7AFE] mb-6 transition-colors duration-200'>
-						<ArrowLeft className='w-5 h-5 mr-2' />
-						Back to Dashboard
-					</button>
-					<div className='bg-[#fffbeb] border border-[#fef3c7] rounded-lg p-6'>
+			<div className='min-h-screen bg-[#F7F9FC] flex flex-col'>
+				<Navbar showSkipToDashboard={true} />
+				<div className='flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full'>
+					<div className='flex items-center gap-3 mb-6'>
+						<button
+							onClick={() => navigate(-1)}
+							className='flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F9FC] text-[#4B5563] border border-[#E5E7EB] rounded-lg transition-colors duration-200'>
+							<ArrowLeft className='w-4 h-4' />
+							<span className='hidden sm:inline'>Back</span>
+						</button>
+						<button
+							onClick={() => navigate('/dashboard')}
+							className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg transition-colors duration-200 text-sm md:text-base'>
+							Dashboard
+						</button>
+					</div>
+					<motion.div
+						className='bg-[#fffbeb] border border-[#fef3c7] rounded-lg p-4 md:p-6'
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.5, ease: 'easeOut' }}>
 						<div className='flex items-start space-x-3'>
-							<AlertCircle className='w-6 h-6 text-[#EAB308] flex-shrink-0 mt-1' />
+							<AlertCircle className='w-5 h-5 md:w-6 md:h-6 text-[#EAB308] flex-shrink-0 mt-1' />
 							<div>
-								<h3 className='font-semibold text-[#d97706] mb-2'>
+								<h3 className='font-semibold text-[#d97706] mb-2 text-base md:text-lg'>
 									Not Enough Data
 								</h3>
-								<p className='text-[#d97706]'>{error}</p>
-								<p className='text-[#b45309] mt-2'>
+								<p className='text-sm md:text-base text-[#d97706]'>{error}</p>
+								<p className='text-xs md:text-sm text-[#b45309] mt-2'>
 									Complete more quizzes and encourage others in your
 									specialization to join!
 								</p>
 							</div>
 						</div>
-					</div>
+					</motion.div>
 				</div>
+				<Footer />
 			</div>
 		);
 	}
 
 	if (!benchmarkData) {
 		return (
-			<div className='min-h-screen bg-[#F7F9FC] flex items-center justify-center'>
-				<div className='text-center'>
-					<p className='text-[#4B5563]'>No benchmark data available.</p>
+			<div className='min-h-screen bg-[#F7F9FC] flex flex-col'>
+				<Navbar showSkipToDashboard={true} />
+				<div className='flex-1 flex items-center justify-center'>
+					<div className='text-center'>
+						<p className='text-[#4B5563]'>No benchmark data available.</p>
+					</div>
 				</div>
+				<Footer />
 			</div>
 		);
 	}
 
 	return (
-		<div className='min-h-screen bg-[#F7F9FC] p-4'>
-			<div className='max-w-7xl mx-auto'>
-				{/* Header */}
-				<div className='mb-8'>
-					<button
-						onClick={() => navigate('/dashboard')}
-						className='flex items-center text-[#4B5563] hover:text-[#3A7AFE] mb-4 transition-colors duration-200'>
-						<ArrowLeft className='w-5 h-5 mr-2' />
-						Back to Dashboard
-					</button>
+		<div className='min-h-screen bg-[#F7F9FC] flex flex-col'>
+			{/* Navbar */}
+			<Navbar showSkipToDashboard={true} />
 
-					<div className='flex items-center justify-between'>
+			{/* Main Content */}
+			<motion.div
+				className='flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 w-full'
+				initial='hidden'
+				animate='visible'
+				variants={containerVariants}>
+				{/* Header */}
+				<motion.div className='mb-6 md:mb-8' variants={itemVariants}>
+					<div className='flex items-center gap-3 mb-4 md:mb-6'>
+						<button
+							onClick={() => navigate(-1)}
+							className='flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F9FC] text-[#4B5563] border border-[#E5E7EB] rounded-lg transition-colors duration-200'>
+							<ArrowLeft className='w-4 h-4' />
+							<span className='hidden sm:inline'>Back</span>
+						</button>
+						<button
+							onClick={() => navigate('/dashboard')}
+							className='px-4 py-2 bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white rounded-lg transition-colors duration-200 text-sm md:text-base'>
+							Dashboard
+						</button>
+					</div>
+
+					<div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
 						<div>
-							<h1 className='text-3xl font-bold text-[#1C1C1C] mb-2'>
+							<h1 className='text-2xl md:text-3xl lg:text-4xl font-bold text-[#1C1C1C] mb-2'>
 								Peer Benchmarking
 							</h1>
-							<p className='text-[#4B5563]'>
-								Compare your performance with {benchmarkData.total_peers} peers
-								in{' '}
+							<p className='text-sm md:text-base text-[#4B5563]'>
+								Compare your performance with{' '}
+								<span className='font-semibold'>
+									{benchmarkData.total_peers}
+								</span>{' '}
+								peers in{' '}
 								<span className='font-semibold'>
 									{benchmarkData.specialization_name}
 								</span>
 							</p>
 						</div>
-						<div className='hidden md:flex items-center space-x-2 text-[#6b7280]'>
-							<Users className='w-5 h-5' />
-							<span className='text-sm'>
+						<div className='flex items-center space-x-2 text-[#4B5563] text-xs md:text-sm'>
+							<Users className='w-4 h-4 md:w-5 md:h-5 flex-shrink-0' />
+							<span>
 								Last updated:{' '}
 								{new Date(benchmarkData.last_updated).toLocaleDateString()}
 							</span>
 						</div>
 					</div>
-				</div>
+				</motion.div>
 
 				{/* Overall Percentile Card */}
-				<div className='bg-[#3A7AFE] rounded-xl shadow-sm p-6 mb-6 text-white'>
-					<div className='flex items-center justify-between'>
+				<motion.div
+					className='bg-[#3A7AFE] rounded-xl shadow-sm p-4 md:p-6 mb-6 text-white'
+					variants={itemVariants}
+					whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+					<div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
 						<div>
-							<p className='text-white/80 mb-2'>Your Overall Standing</p>
-							<h2 className='text-4xl font-bold mb-2'>
+							<p className='text-white/80 mb-2 text-sm md:text-base'>
+								Your Overall Standing
+							</p>
+							<h2 className='text-3xl md:text-4xl font-bold mb-2'>
 								Top {100 - benchmarkData.overall_percentile}%
 							</h2>
-							<p className='text-white/80'>
+							<p className='text-white/80 text-sm md:text-base'>
 								You score higher than{' '}
 								<span className='font-semibold'>
 									{benchmarkData.overall_percentile}%
@@ -183,44 +250,51 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 								of your peers
 							</p>
 						</div>
-						<Award className='w-16 h-16 text-white/30' />
+						<Award className='w-12 h-12 md:w-16 md:h-16 text-white/30 flex-shrink-0' />
 					</div>
-				</div>
+				</motion.div>
 
 				{/* Score Comparisons */}
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8'>
+				<div className='grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8'>
 					{benchmarkData.comparisons.map((comparison, index) => (
-						<div
+						<motion.div
 							key={index}
-							className={`bg-white rounded-xl shadow-sm p-6 border-2 ${getStatusColor(
+							className={`bg-white rounded-xl shadow-sm p-4 md:p-6 border-2 ${getStatusColor(
 								comparison.status
-							)}`}>
-							<div className='flex items-start justify-between mb-4'>
-								<div>
-									<h3 className='text-lg font-semibold text-[#1C1C1C] mb-1'>
+							)}`}
+							variants={itemVariants}
+							initial='hidden'
+							animate='visible'
+							transition={{ delay: index * 0.1 }}
+							whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+							<div className='flex items-start justify-between mb-4 gap-2'>
+								<div className='flex-1 min-w-0'>
+									<h3 className='text-base md:text-lg font-semibold text-[#1C1C1C] mb-1'>
 										{comparison.category}
 									</h3>
-									<p className='text-sm text-[#4B5563]'>
+									<p className='text-xs md:text-sm text-[#4B5563]'>
 										{getStatusText(comparison.status, comparison.difference)}
 									</p>
 								</div>
-								{getStatusIcon(comparison.status)}
+								<div className='flex-shrink-0'>
+									{getStatusIcon(comparison.status)}
+								</div>
 							</div>
 
-							<div className='space-y-4'>
+							<div className='space-y-3 md:space-y-4'>
 								{/* Your Score */}
 								<div>
-									<div className='flex justify-between items-center mb-2'>
-										<span className='text-sm font-medium text-[#4B5563]'>
+									<div className='flex justify-between items-center mb-2 gap-2'>
+										<span className='text-xs md:text-sm font-medium text-[#4B5563]'>
 											Your Score
 										</span>
-										<span className='text-lg font-bold text-[#3A7AFE]'>
+										<span className='text-base md:text-lg font-bold text-[#3A7AFE]'>
 											{comparison.your_score}%
 										</span>
 									</div>
-									<div className='w-full bg-[#E5E7EB] rounded-full h-3'>
+									<div className='w-full bg-[#E5E7EB] rounded-full h-2 md:h-3'>
 										<div
-											className='bg-[#3A7AFE] h-3 rounded-full transition-all duration-500'
+											className='bg-[#3A7AFE] h-2 md:h-3 rounded-full transition-all duration-500'
 											style={{ width: `${comparison.your_score}%` }}
 										/>
 									</div>
@@ -228,17 +302,17 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 
 								{/* Peer Average */}
 								<div>
-									<div className='flex justify-between items-center mb-2'>
-										<span className='text-sm font-medium text-[#4B5563]'>
+									<div className='flex justify-between items-center mb-2 gap-2'>
+										<span className='text-xs md:text-sm font-medium text-[#4B5563]'>
 											Peer Average
 										</span>
-										<span className='text-lg font-bold text-[#6b7280]'>
+										<span className='text-base md:text-lg font-bold text-[#4B5563]'>
 											{comparison.peer_average}%
 										</span>
 									</div>
-									<div className='w-full bg-[#E5E7EB] rounded-full h-3'>
+									<div className='w-full bg-[#E5E7EB] rounded-full h-2 md:h-3'>
 										<div
-											className='bg-[#9ca3af] h-3 rounded-full transition-all duration-500'
+											className='bg-[#9ca3af] h-2 md:h-3 rounded-full transition-all duration-500'
 											style={{ width: `${comparison.peer_average}%` }}
 										/>
 									</div>
@@ -246,106 +320,122 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 
 								{/* Percentile */}
 								<div className='pt-2 border-t border-[#E5E7EB]'>
-									<div className='flex items-center justify-between'>
-										<span className='text-sm text-[#4B5563]'>
+									<div className='flex items-center justify-between gap-2'>
+										<span className='text-xs md:text-sm text-[#4B5563]'>
 											Your Percentile
 										</span>
-										<span className='text-sm font-semibold text-[#1C1C1C]'>
+										<span className='text-xs md:text-sm font-semibold text-[#1C1C1C]'>
 											{comparison.percentile}th percentile
 										</span>
 									</div>
 								</div>
 							</div>
-						</div>
+						</motion.div>
 					))}
 				</div>
 
 				{/* Common Strengths and Gaps */}
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+				<div className='grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8'>
 					{/* Common Strengths */}
-					<div className='bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]'>
-						<div className='flex items-center space-x-2 mb-4'>
-							<CheckCircle className='w-6 h-6 text-[#4CAF50]' />
-							<h3 className='text-xl font-semibold text-[#1C1C1C]'>
+					<motion.div
+						className='bg-white rounded-xl shadow-sm p-4 md:p-6 border border-[#E5E7EB]'
+						variants={itemVariants}
+						whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+						<div className='flex items-center space-x-2 mb-3 md:mb-4'>
+							<CheckCircle className='w-5 h-5 md:w-6 md:h-6 text-[#4CAF50] flex-shrink-0' />
+							<h3 className='text-lg md:text-xl font-semibold text-[#1C1C1C]'>
 								Common Strengths
 							</h3>
 						</div>
-						<p className='text-[#4B5563] mb-4'>
+						<p className='text-xs md:text-sm text-[#4B5563] mb-3 md:mb-4'>
 							Areas where most peers in your specialization excel
 						</p>
 						{benchmarkData.common_strengths.length > 0 ? (
-							<div className='space-y-3'>
+							<div className='space-y-2 md:space-y-3'>
 								{benchmarkData.common_strengths.map((strength, index) => (
-									<div
+									<motion.div
 										key={index}
-										className='p-4 bg-[#f0fdf4] border border-[#dcfce7] rounded-lg'>
-										<div className='flex items-start justify-between mb-2'>
-											<h4 className='font-semibold text-[#16a34a]'>
+										className='p-3 md:p-4 bg-[#f0fdf4] border border-[#dcfce7] rounded-lg'
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: index * 0.1, duration: 0.4 }}>
+										<div className='flex items-start justify-between mb-2 gap-2'>
+											<h4 className='font-semibold text-[#16a34a] text-sm md:text-base flex-1'>
 												{strength.area}
 											</h4>
-											<span className='text-lg font-bold text-[#4CAF50]'>
+											<span className='text-base md:text-lg font-bold text-[#4CAF50] flex-shrink-0'>
 												{strength.percentage}%
 											</span>
 										</div>
-										<p className='text-sm text-[#15803d]'>
+										<p className='text-xs md:text-sm text-[#15803d]'>
 											{strength.description}
 										</p>
-									</div>
+									</motion.div>
 								))}
 							</div>
 						) : (
-							<p className='text-[#6b7280] italic'>
+							<p className='text-xs md:text-sm text-[#4B5563] italic'>
 								No common strengths identified yet.
 							</p>
 						)}
-					</div>
+					</motion.div>
 
 					{/* Common Gaps */}
-					<div className='bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]'>
-						<div className='flex items-center space-x-2 mb-4'>
-							<Target className='w-6 h-6 text-[#EAB308]' />
-							<h3 className='text-xl font-semibold text-[#1C1C1C]'>
+					<motion.div
+						className='bg-white rounded-xl shadow-sm p-4 md:p-6 border border-[#E5E7EB]'
+						variants={itemVariants}
+						whileHover={{ y: -2, transition: { duration: 0.2 } }}>
+						<div className='flex items-center space-x-2 mb-3 md:mb-4'>
+							<Target className='w-5 h-5 md:w-6 md:h-6 text-[#EAB308] flex-shrink-0' />
+							<h3 className='text-lg md:text-xl font-semibold text-[#1C1C1C]'>
 								Common Gaps
 							</h3>
 						</div>
-						<p className='text-[#4B5563] mb-4'>
+						<p className='text-xs md:text-sm text-[#4B5563] mb-3 md:mb-4'>
 							Areas where most peers need improvement
 						</p>
 						{benchmarkData.common_gaps.length > 0 ? (
-							<div className='space-y-3'>
+							<div className='space-y-2 md:space-y-3'>
 								{benchmarkData.common_gaps.map((gap, index) => (
-									<div
+									<motion.div
 										key={index}
-										className='p-4 bg-[#fffbeb] border border-[#fef3c7] rounded-lg'>
-										<div className='flex items-start justify-between mb-2'>
-											<h4 className='font-semibold text-[#d97706]'>
+										className='p-3 md:p-4 bg-[#fffbeb] border border-[#fef3c7] rounded-lg'
+										initial={{ opacity: 0, y: 10 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{ delay: index * 0.1, duration: 0.4 }}>
+										<div className='flex items-start justify-between mb-2 gap-2'>
+											<h4 className='font-semibold text-[#d97706] text-sm md:text-base flex-1'>
 												{gap.area}
 											</h4>
-											<span className='text-lg font-bold text-[#EAB308]'>
+											<span className='text-base md:text-lg font-bold text-[#EAB308] flex-shrink-0'>
 												{gap.percentage}%
 											</span>
 										</div>
-										<p className='text-sm text-[#b45309]'>{gap.description}</p>
-									</div>
+										<p className='text-xs md:text-sm text-[#b45309]'>
+											{gap.description}
+										</p>
+									</motion.div>
 								))}
 							</div>
 						) : (
-							<p className='text-[#6b7280] italic'>
+							<p className='text-xs md:text-sm text-[#4B5563] italic'>
 								No common gaps identified yet.
 							</p>
 						)}
-					</div>
+					</motion.div>
 				</div>
 
 				{/* Privacy Note */}
-				<div className='mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4'>
+				<motion.div
+					className='mt-6 md:mt-8 bg-[#F7F9FC] border border-[#E5E7EB] rounded-lg p-4 md:p-6'
+					variants={itemVariants}>
 					<div className='flex items-start space-x-3'>
-						<AlertCircle className='w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5' />
+						<AlertCircle className='w-4 h-4 md:w-5 md:h-5 text-[#3A7AFE] flex-shrink-0 mt-0.5' />
 						<div>
-							<h4 className='font-semibold text-blue-900 mb-1'>
+							<h4 className='font-semibold text-[#1C1C1C] mb-1 text-sm md:text-base'>
 								Privacy & Data
 							</h4>
-							<p className='text-sm text-blue-800'>
+							<p className='text-xs md:text-sm text-[#4B5563]'>
 								All peer comparison data is aggregated and anonymized. Your
 								individual performance is never shared with other users.
 								Benchmarks are updated regularly based on the latest quiz
@@ -353,20 +443,29 @@ export default function PeerBenchmarkingPage(): JSX.Element {
 							</p>
 						</div>
 					</div>
-				</div>
+				</motion.div>
 
 				{/* CTA Button */}
-				<div className='mt-8 text-center'>
-					<button
+				<motion.div
+					className='mt-6 md:mt-8 text-center'
+					variants={itemVariants}>
+					<motion.button
 						onClick={() => navigate('/test-hub')}
-						className='bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-lg font-semibold hover:shadow-xl hover:scale-105 transition-all'>
-						<div className='flex items-center space-x-2'>
-							<BarChart3 className='w-5 h-5' />
-							<span>Take More Quizzes to Improve Your Ranking</span>
+						className='bg-[#3A7AFE] hover:bg-[#2E6AE8] text-white px-6 md:px-8 py-3 md:py-4 rounded-lg font-semibold transition-colors duration-200 w-full sm:w-auto'
+						whileHover={{ scale: 1.02 }}
+						whileTap={{ scale: 0.98 }}>
+						<div className='flex items-center justify-center space-x-2'>
+							<BarChart3 className='w-4 h-4 md:w-5 md:h-5' />
+							<span className='text-sm md:text-base'>
+								Take More Quizzes to Improve Your Ranking
+							</span>
 						</div>
-					</button>
-				</div>
-			</div>
+					</motion.button>
+				</motion.div>
+			</motion.div>
+
+			{/* Footer */}
+			<Footer />
 		</div>
 	);
 }
